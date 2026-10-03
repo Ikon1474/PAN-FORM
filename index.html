@@ -1,221 +1,698 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Form 93 – PAN Application | Live PDF Preview & Smart Filler</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-    <script src="https://unpkg.com/@pdf-lib/fontkit/dist/fontkit.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            background: #eef2f7;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 24px 20px;
-        }
-        .app-container {
-            max-width: 1500px;
-            margin: 0 auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 28px;
-        }
-        .form-panel {
-            flex: 1.2;
-            min-width: 380px;
-            background: white;
-            border-radius: 28px;
-            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
-            padding: 24px 28px;
-            max-height: 92vh;
-            overflow-y: auto;
-        }
-        .preview-panel {
-            flex: 1;
-            min-width: 460px;
-            background: #f9fafc;
-            border-radius: 28px;
-            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
-            padding: 20px;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-            max-height: 92vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .pdf-viewer {
-            background: #fff;
-            border-radius: 20px;
-            border: 1px solid #cfdee9;
-            overflow: auto;
-            height: 100vh;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
-            position: relative;
-        }
-        iframe, .pdf-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: white;
-        }
-        h2 { font-size: 1.7rem; margin: 0 0 6px; color: #1a2c3e; }
-        .sub { color: #2c5a74; font-size: 0.85rem; margin-bottom: 22px; border-left: 4px solid #f4b942; padding-left: 14px; background: #fff6e8; border-radius: 12px; }
-        .form-section {
-            background: #ffffff;
-            border-radius: 20px;
-            margin-bottom: 28px;
-            border: 1px solid #e2edf2;
-            padding: 14px 18px 18px;
-        }
-        .section-title {
-            font-weight: 700;
-            font-size: 1.05rem;
-            margin-bottom: 12px;
-            color: #0f4c5f;
-            border-left: 5px solid #f4b942;
-            padding-left: 12px;
-        }
-        .section-title.title-main {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            font-size: 1.25rem;
-            padding: 10px 14px;
-            margin: 0 0 14px 0;
-            border-radius: 12px;
-            background: linear-gradient(90deg, rgba(244,185,66,0.08), rgba(31,94,122,0.02));
-            border-left: 6px solid #f4b942;
-            cursor: pointer;
-        }
-        .section-title.title-main .toggle-icon {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            line-height: 18px;
-            text-align: center;
-            font-size: 12px;
-            color: #0f4c5f;
-            transition: transform 180ms ease;
-        }
-        .form-section.collapsed > :not(.section-title.title-main) {
-            display: none;
-        }
-        .form-section.collapsed .toggle-icon {
-            transform: rotate(-90deg);
-        }
-        .row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; align-items: flex-start; }
-        .field-group { flex: 1; min-width: 150px; }
-        label { font-weight: 600; font-size: 0.8rem; color: #1f5e7a; display: block; margin-bottom: 6px; }
-        input, select {
-            width: 100%; padding: 10px 12px; border-radius: 14px; border: 1px solid #cbdde6;
-            font-size: 0.9rem; transition: 0.2s; background: white;
-        }
-        input:focus, select:focus { outline: none; border-color: #f4b942; box-shadow: 0 0 0 3px rgba(244,185,66,0.2); }
-        .radio-group, .check-group { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin-top: 5px; }
-        .radio-group label, .check-group label { display: inline-flex; align-items: center; gap: 6px; font-weight: normal; }
-        .copy-btn { background: #eef2fa; border: 1px solid #bdd3e0; padding: 8px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 600; cursor: pointer; margin-top: 6px; transition: 0.2s; }
-        .copy-btn:hover { background: #f4e3c6; border-color: #f4b942; }
-        .inline-hint { font-size: 0.7rem; color: #3d7e9a; margin-top: 4px; }
-        button.primary {
-            background: #1f5e7a; border: none; color: white; padding: 14px 20px;
-            border-radius: 50px; font-weight: bold; font-size: 1rem; cursor: pointer;
-            width: 100%; margin-top: 12px; transition: 0.2s;
-        }
-        .preview-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-        .preview-header h3 { margin: 0; flex-shrink: 0; }
-        .preview-header button {
-            width: auto; padding: 8px 12px; font-size: 0.75rem; margin-top: 0; flex-shrink: 0;
-        }
-        #refreshPreviewBtn { background: #0d7fb5 !important; }
-        #refreshPreviewBtn:hover { background: #0a5f8f !important; }
-        #downloadPdfBtn { background: #27ae60 !important; }
-        #downloadPdfBtn:hover { background: #1e8449 !important; }
-        #toggleDragBtn { background: #e67e22 !important; }
-        #toggleDragBtn:hover { background: #ca6f1e !important; }
-        .error-msg { color: #c7362b; font-size: 0.7rem; margin-top: 4px; }
-        .rule-card {
-            background: #fef7e8; border-radius: 18px; padding: 10px 16px; margin-top: 14px;
-            font-size: 0.75rem; border-left: 4px solid #f4b942;
-        }
-        .upload-area { display: block; margin-bottom: 18px; text-align: center; }
-        .file-label {
-            background: #ffffff; border: 2px dashed #1f5e7a; border-radius: 40px;
-            padding: 12px 24px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
-            color: #1f5e7a; display: inline-block; transition: all 0.2s;
-        }
-        .file-label:hover { background: #f0f7ff; border-color: #f4b942; }
-        .declaration-box {
-            background: #f8fbfd; border: 1px solid #d8e8f0; border-radius: 16px;
-            padding: 16px 18px; margin-bottom: 16px; font-size: 0.85rem;
-            line-height: 1.6; color: #1a2c3e;
-        }
-        .declaration-box .blank-line {
-            display: inline-block; border-bottom: 1px solid #1f5e7a;
-            min-width: 180px; margin: 0 4px; vertical-align: bottom;
-        }
-        @media (max-width: 880px) { .preview-panel { position: relative; top: 0; } }
-        .required { color: red; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>PAN Automation Suite — Form 93 + Photo/Signature (All-in-One)</title>
 
-        /* Draggable overlay */
-        .pdf-viewer { position: relative; }
-        #pdfPreviewContainer { position: relative; }
-        .drag-overlay {
-            position: absolute; inset: 0; pointer-events: none; z-index: 10;
-            display: none;
-        }
-        .drag-overlay.active { display: block; pointer-events: auto; }
-        .drag-item {
-            position: absolute;
-            background: rgba(255, 220, 120, 0.55);
-            border: 1.5px dashed #e67e22;
-            color: #7a4a00;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 4px;
-            cursor: move;
-            user-select: none;
-            white-space: nowrap;
-            font-family: 'Segoe UI', sans-serif;
-            pointer-events: auto;
-        }
-        .drag-item.active-drag {
-            background: rgba(255, 140, 0, 0.85);
-            color: #fff;
-            border-color: #b34700;
-            box-shadow: 0 0 0 3px rgba(230,126,34,0.35);
-        }
-        .drag-item .tag {
-            position: absolute;
-            top: -16px;
-            left: 0;
-            background: #e67e22;
-            color: #fff;
-            padding: 1px 6px;
-            border-radius: 4px 4px 0 0;
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-        }
-        .drag-hint {
-            background: #fff3cd; border: 1px solid #ffe08a; border-radius: 12px;
-            padding: 8px 14px; font-size: 0.75rem; color: #7a5a00;
-            margin-bottom: 10px;
-        }
-    </style>
+<!-- Part 1 libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/@pdf-lib/fontkit/dist/fontkit.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
+
+<!-- Part 2 libs -->
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<style>
+/* ============================================================
+   GLOBAL
+   ============================================================ */
+* { box-sizing: border-box; }
+body {
+    background: #eef2f7;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.top-bar {
+    background: linear-gradient(135deg, #1f5e7a 0%, #0d7fb5 100%);
+    color: #fff;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.top-bar .brand {
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.top-bar .brand .logo {
+    width: 32px; height: 32px; border-radius: 10px;
+    background: #f4b942; color: #1f5e7a;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 800;
+}
+.top-bar .progress-wrap {
+    flex: 1;
+    min-width: 180px;
+    max-width: 380px;
+}
+.top-bar .progress-wrap .progress-label {
+    font-size: 0.7rem; opacity: 0.85; margin-bottom: 4px;
+    display: flex; justify-content: space-between;
+}
+.top-bar .progress-bar {
+    height: 8px; background: rgba(255,255,255,0.2);
+    border-radius: 20px; overflow: hidden;
+}
+.top-bar .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #f4b942, #ffd97a);
+    border-radius: 20px;
+    transition: width 0.5s ease;
+}
+.top-bar .stats {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 0.75rem;
+}
+.top-bar .stats .stat {
+    background: rgba(255,255,255,0.12);
+    padding: 5px 12px; border-radius: 20px;
+    display: flex; align-items: center; gap: 6px;
+}
+.top-bar .stats .stat .val { font-weight: 800; }
+
+/* ============================================================
+   TABS
+   ============================================================ */
+.tabs-bar {
+    background: #fff;
+    padding: 12px 24px 0;
+    display: flex;
+    gap: 6px;
+    border-bottom: 2px solid #e2edf2;
+    position: sticky;
+    top: 64px;
+    z-index: 99;
+    flex-wrap: wrap;
+}
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: 12px 22px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #7a95a8;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    display: flex; align-items: center; gap: 8px;
+    transition: 0.2s;
+    border-radius: 8px 8px 0 0;
+}
+.tab-btn:hover { color: #1f5e7a; background: #f0f8fc; }
+.tab-btn.active {
+    color: #1f5e7a;
+    border-bottom-color: #f4b942;
+    background: #fff9ef;
+}
+.tab-btn .tab-badge {
+    background: #cfdee9; color: #1f5e7a;
+    font-size: 0.65rem; font-weight: 800;
+    padding: 1px 7px; border-radius: 10px;
+}
+.tab-btn.active .tab-badge { background: #f4b942; color: #fff; }
+.tab-btn .tab-done {
+    background: #27ae60; color: #fff;
+    font-size: 0.65rem; font-weight: 800;
+    padding: 1px 7px; border-radius: 10px;
+}
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ============================================================
+   PART 1 — FORM 93
+   ============================================================ */
+.p1-container {
+    max-width: 1500px;
+    margin: 20px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+.form-panel {
+    flex: 1.2;
+    min-width: 380px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+    padding: 22px 26px;
+    max-height: 88vh;
+    overflow-y: auto;
+}
+.preview-panel {
+    flex: 1;
+    min-width: 440px;
+    background: #f9fafc;
+    border-radius: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+    padding: 18px;
+    position: sticky;
+    top: 120px;
+    height: fit-content;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+}
+h2 { font-size: 1.5rem; margin: 0 0 6px; color: #1a2c3e; }
+.sub { color: #2c5a74; font-size: 0.82rem; margin-bottom: 18px; border-left: 4px solid #f4b942; padding-left: 12px; background: #fff6e8; border-radius: 10px; padding-top: 6px; padding-bottom: 6px; padding-right: 12px; }
+.form-section {
+    background: #ffffff;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    border: 1px solid #e2edf2;
+    padding: 12px 16px 16px;
+}
+.section-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #0f4c5f;
+    border-left: 5px solid #f4b942;
+    padding-left: 12px;
+}
+.section-title.title-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 1.15rem;
+    padding: 10px 14px;
+    margin: 0 0 12px 0;
+    border-radius: 12px;
+    background: linear-gradient(90deg, rgba(244,185,66,0.08), rgba(31,94,122,0.02));
+    border-left: 6px solid #f4b942;
+    cursor: pointer;
+}
+.section-title.title-main .toggle-icon {
+    display: inline-block;
+    width: 18px; height: 18px;
+    line-height: 18px; text-align: center;
+    font-size: 12px; color: #0f4c5f;
+    transition: transform 180ms ease;
+}
+.section-title .sec-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+}
+.sec-status.ok { background: #e8f8ef; color: #1e8449; }
+.sec-status.pending { background: #fff3cd; color: #856404; }
+.form-section.collapsed > :not(.section-title.title-main) { display: none; }
+.form-section.collapsed .toggle-icon { transform: rotate(-90deg); }
+.row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+.field-group { flex: 1; min-width: 150px; }
+label { font-weight: 600; font-size: 0.78rem; color: #1f5e7a; display: block; margin-bottom: 5px; }
+input, select {
+    width: 100%; padding: 9px 12px; border-radius: 12px; border: 1px solid #cbdde6;
+    font-size: 0.88rem; transition: 0.2s; background: white;
+}
+input:focus, select:focus { outline: none; border-color: #f4b942; box-shadow: 0 0 0 3px rgba(244,185,66,0.2); }
+.radio-group, .check-group { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 5px; }
+.radio-group label, .check-group label { display: inline-flex; align-items: center; gap: 6px; font-weight: normal; }
+.copy-btn { background: #eef2fa; border: 1px solid #bdd3e0; padding: 6px 12px; border-radius: 40px; font-size: 0.72rem; font-weight: 600; cursor: pointer; margin-top: 4px; transition: 0.2s; }
+.copy-btn:hover { background: #f4e3c6; border-color: #f4b942; }
+button.primary {
+    background: #1f5e7a; border: none; color: white; padding: 12px 18px;
+    border-radius: 50px; font-weight: bold; font-size: 0.92rem; cursor: pointer;
+    width: 100%; margin-top: 10px; transition: 0.2s;
+}
+.preview-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; flex-wrap: wrap;
+}
+.preview-header h3 { margin: 0; flex-shrink: 0; font-size: 1rem; }
+.preview-header button {
+    width: auto; padding: 7px 12px; font-size: 0.72rem; margin-top: 0; flex-shrink: 0;
+}
+#refreshPreviewBtn { background: #0d7fb5 !important; }
+#downloadPdfBtn { background: #27ae60 !important; }
+#toggleDragBtn { background: #e67e22 !important; }
+.rule-card {
+    background: #fef7e8; border-radius: 14px; padding: 8px 14px; margin-top: 12px;
+    font-size: 0.72rem; border-left: 4px solid #f4b942;
+}
+.upload-area { display: block; margin-bottom: 16px; text-align: center; }
+.file-label {
+    background: #ffffff; border: 2px dashed #1f5e7a; border-radius: 40px;
+    padding: 10px 22px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+    color: #1f5e7a; display: inline-block; transition: all 0.2s;
+}
+.file-label:hover { background: #f0f7ff; border-color: #f4b942; }
+.declaration-box {
+    background: #f8fbfd; border: 1px solid #d8e8f0; border-radius: 14px;
+    padding: 14px 16px; margin-bottom: 14px; font-size: 0.82rem;
+    line-height: 1.55; color: #1a2c3e;
+}
+.declaration-box .blank-line {
+    display: inline-block; border-bottom: 1px solid #1f5e7a;
+    min-width: 160px; margin: 0 4px; vertical-align: bottom;
+}
+.pdf-viewer {
+    background: #fff; border-radius: 18px; border: 1px solid #cfdee9;
+    overflow: auto; height: 100vh;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02); position: relative;
+}
+.pdf-iframe { width: 100%; height: 100%; border: none; background: white; }
+.required { color: red; }
+
+/* drag overlay (Part 1) */
+#pdfPreviewContainer { position: relative; }
+.drag-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none; }
+.drag-overlay.active { display: block; pointer-events: auto; }
+.drag-item {
+    position: absolute; background: rgba(255, 220, 120, 0.55);
+    border: 1.5px dashed #e67e22; color: #7a4a00;
+    font-size: 11px; font-weight: 700; padding: 2px 6px;
+    border-radius: 4px; cursor: move; user-select: none;
+    white-space: nowrap; font-family: 'Segoe UI', sans-serif;
+    pointer-events: auto;
+}
+.drag-item.active-drag {
+    background: rgba(255, 140, 0, 0.85); color: #fff;
+    border-color: #b34700; box-shadow: 0 0 0 3px rgba(230,126,34,0.35);
+}
+.drag-item .tag {
+    position: absolute; top: -16px; left: 0;
+    background: #e67e22; color: #fff; padding: 1px 6px;
+    border-radius: 4px 4px 0 0; font-size: 9px; font-weight: 700;
+}
+.drag-hint {
+    background: #fff3cd; border: 1px solid #ffe08a; border-radius: 12px;
+    padding: 8px 14px; font-size: 0.72rem; color: #7a5a00; margin-bottom: 10px;
+}
+@media (max-width: 980px) {
+    .preview-panel { position: relative; top: 0; }
+    .form-panel { max-height: none; }
+}
+
+/* ============================================================
+   PART 2 — PHOTO/SIGN
+   ============================================================ */
+#part2Section {
+    max-width: 1700px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+#part2Card {
+    background: #fff;
+    padding: 16px;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+    height: calc(100vh - 160px);
+    display: flex;
+    flex-direction: column;
+}
+#part2Card h2 {
+    text-align: center; color: #0056b3;
+    margin: 0 0 10px; font-size: 1.15rem;
+}
+#part2Card .layout {
+    display: flex; gap: 14px; flex: 1; min-height: 0;
+}
+#part2Card .left-panel {
+    width: 360px; min-width: 320px; flex-shrink: 0;
+    overflow-y: auto; padding-right: 6px;
+    border-right: 1px solid #e5e5e5;
+}
+#part2Card .right-panel {
+    flex: 1; min-width: 0; display: flex; flex-direction: column;
+}
+#part2Card .form-group { margin-bottom: 12px; }
+#part2Card input[type="file"] {
+    width: 100%; padding: 7px; border: 1px solid #ccc;
+    border-radius: 5px; background: #fafafa; font-size: 12px;
+}
+#part2Card .filename { font-size: 11px; color: #666; margin-top: 3px; min-height: 12px; word-break: break-all; }
+#part2Card button {
+    width: 100%; padding: 10px; background-color: #28a745;
+    color: white; border: none; border-radius: 5px;
+    font-size: 14px; font-weight: bold; cursor: pointer;
+    transition: background 0.3s; margin-top: 6px;
+}
+#part2Card button:hover { background-color: #218838; }
+#part2Card button:disabled { background-color: #9e9e9e; cursor: not-allowed; }
+#part2Card button.secondary { background-color: #007bff; }
+#part2Card button.secondary:hover { background-color: #0056b3; }
+#part2Card button.warn { background-color: #dc3545; }
+#part2Card button.warn:hover { background-color: #a71d2a; }
+#part2Card button.small { padding: 6px 10px; font-size: 12px; width: auto; margin: 0; }
+#part2Card button.preview-btn { background-color: #6f42c1; margin-top: 10px; font-size: 15px; padding: 12px; }
+#part2Card button.download-btn { background-color: #17a2b8; margin-top: 10px; font-size: 15px; padding: 12px; }
+#part2Card button.lock-btn {
+    background-color: #6c757d; margin-top: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 13px; padding: 8px;
+}
+#part2Card button.lock-btn.locked {
+    background-color: #dc3545; box-shadow: 0 0 0 3px rgba(220,53,69,0.2);
+}
+#part2Card .status {
+    margin-top: 10px; text-align: center; font-weight: bold;
+    color: #d9534f; font-size: 13px;
+}
+#part2Card .success { color: #28a745; }
+#part2Card .download-link {
+    display: block; text-align: center; margin-top: 8px;
+    color: #0056b3; font-weight: bold; text-decoration: none; font-size: 13px;
+}
+#part2Card .extras-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-top: 6px;
+}
+#part2Card .extras-header label { margin: 0; }
+#part2Card .extras-list {
+    margin-top: 6px; max-height: 180px; overflow-y: auto;
+    border: 1px solid #e0e0e0; border-radius: 5px;
+    padding: 5px; background: #fafafa;
+}
+#part2Card .extra-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 6px; border-radius: 4px; font-size: 12px;
+    cursor: pointer; user-select: none;
+}
+#part2Card .extra-item:hover { background: #eef5ff; }
+#part2Card .extra-item.active {
+    background: #d6e8ff; font-weight: bold; outline: 1px solid #007bff;
+}
+#part2Card .extra-item .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+#part2Card .extra-item .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#part2Card .extra-item .page-tag {
+    background: #17a2b8; color: #fff; font-size: 10px;
+    padding: 1px 6px; border-radius: 8px; font-weight: bold;
+}
+#part2Card .extra-item .remove {
+    background: #ff5c5c; color: #fff; border: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    font-size: 11px; line-height: 1; cursor: pointer; padding: 0;
+}
+#part2Card .preview-wrap {
+    background: #e9eef3; border-radius: 8px; padding: 8px;
+    display: flex; flex-direction: column; flex: 1; min-height: 0;
+}
+#part2Card .preview-toolbar {
+    display: flex; gap: 8px; margin-bottom: 6px;
+    flex-wrap: wrap; align-items: center; justify-content: center;
+}
+#part2Card .preview-toolbar button { width: auto; padding: 5px 10px; font-size: 12px; margin: 0; }
+#part2Card #pageInfo { padding: 5px 10px; font-size: 13px; font-weight: bold; color: #333; }
+#part2Card .zoom-label { font-size: 12px; color: #333; }
+#part2Card #zoomRange { width: 120px; }
+#part2Card .preview-stage-outer {
+    flex: 1; overflow: auto; background: #dde4ec;
+    border: 1px solid #b9c4d1; border-radius: 6px;
+    min-height: 0; position: relative;
+}
+#part2Card .preview-stage { position: relative; display: inline-block; padding: 14px; }
+#part2Card #pdfCanvas {
+    display: block; box-shadow: 0 2px 12px rgba(0,0,0,0.2); background: #fff;
+}
+#part2Card .overlay-item {
+    position: absolute; cursor: move;
+    border: 2px dashed #007bff; user-select: none;
+    touch-action: none; background: rgba(0,123,255,0.06);
+    overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s;
+}
+#part2Card .overlay-item.sign  { border-color: #e83e8c; background: rgba(232,62,140,0.06); }
+#part2Card .overlay-item.thumb { border-color: #1976d2; background: rgba(25,118,210,0.06); }
+#part2Card .overlay-item.selected { border-style: solid; box-shadow: 0 0 0 2px rgba(0,123,255,0.35); }
+#part2Card .overlay-item.sign.selected  { box-shadow: 0 0 0 2px rgba(232,62,140,0.35); }
+#part2Card .overlay-item.thumb.selected { box-shadow: 0 0 0 2px rgba(25,118,210,0.35); }
+#part2Card .overlay-item.locked {
+    border-style: solid; border-color: #28a745; cursor: default;
+    background: rgba(40,167,69,0.04);
+}
+#part2Card .overlay-item.locked .resize-handle { display: none; }
+#part2Card .overlay-item.locked::after {
+    content: '🔒'; position: absolute; top: 2px; right: 2px;
+    background: #28a745; color: #fff; font-size: 11px;
+    padding: 1px 5px; border-radius: 3px;
+}
+#part2Card .overlay-item img {
+    width: 100%; height: 100%; display: block;
+    pointer-events: none; object-fit: contain;
+}
+#part2Card .resize-handle {
+    position: absolute; right: -7px; bottom: -7px;
+    width: 14px; height: 14px; background: #007bff;
+    border-radius: 2px; cursor: nwse-resize;
+    border: 2px solid #fff; z-index: 5;
+}
+#part2Card .overlay-item.sign  .resize-handle { background: #e83e8c; }
+#part2Card .overlay-item.thumb .resize-handle { background: #1976d2; }
+#part2Card .controls {
+    margin-top: 8px; padding: 8px; background: #f8f9fa;
+    border-radius: 6px; font-size: 12px; border: 1px solid #e0e0e0;
+}
+#part2Card .controls-row {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
+}
+#part2Card .controls-row label { margin: 0; min-width: 55px; font-size: 11px; }
+#part2Card .controls-row input[type="range"] { flex: 1; }
+#part2Card .controls-row input[type="number"] {
+    width: 60px; padding: 3px 4px; font-size: 11px;
+    border: 1px solid #ccc; border-radius: 4px;
+}
+#part2Card .hint { font-size: 11px; color: #666; margin-top: 6px; line-height: 1.4; }
+#part2Card .checkbox-row {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; margin-bottom: 6px;
+}
+#part2Card .badge {
+    display: inline-block; background: #007bff; color: #fff;
+    font-size: 10px; padding: 1px 5px; border-radius: 4px; margin-left: 3px;
+}
+#part2Card .badge.pink { background: #e83e8c; }
+#part2Card .badge.blue { background: #1976d2; }
+#part2Card .tab-buttons { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+#part2Card .tab-buttons button {
+    flex: 1; min-width: 75px; padding: 6px; font-size: 12px;
+    background: #e9ecef; color: #333; border: 1px solid #ccc;
+}
+#part2Card .tab-buttons button.active { background: #007bff; color: #fff; border-color: #007bff; }
+#part2Card #emptyPreview { padding: 80px 20px; color: #888; font-size: 14px; text-align: center; }
+#part2Card .page-note {
+    background: #fff8e1; border: 1px solid #ffe082; color: #795548;
+    font-size: 11px; padding: 5px 7px; border-radius: 4px;
+    margin-bottom: 6px; line-height: 1.4;
+}
+#part2Card .lock-status-bar {
+    background: #f0f8f0; border: 1px solid #b3e0b3; color: #2c5e2c;
+    font-size: 11px; padding: 5px 8px; border-radius: 4px;
+    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+#part2Card .lock-status-bar.locked {
+    background: #ffe8e8; border-color: #f5c2c2; color: #8b1e1e;
+}
+#part2Card .thumb-blue-note {
+    background: #e3f2fd; border-left: 4px solid #1976d2;
+    padding: 6px 10px; border-radius: 4px; font-size: 11px;
+    color: #0d47a1; margin-top: 4px;
+}
+#part2Card .file-preview-thumb {
+    margin-top: 6px; display: none; text-align: center;
+    background: #f0f0f0; border-radius: 6px; padding: 6px;
+    border: 1px solid #ddd;
+}
+#part2Card .file-preview-thumb img {
+    max-width: 120px; max-height: 90px; border-radius: 4px;
+    border: 1px solid #ccc; background: #fff;
+}
+#part2Card .file-preview-thumb .thumb-label { font-size: 10px; color: #555; margin-top: 3px; }
+#part2Card .pdf-info {
+    display: none; background: #e8f5e9; border: 1px solid #a5d6a7;
+    color: #1b5e20; font-size: 11px; padding: 5px 8px;
+    border-radius: 4px; margin-top: 5px;
+}
+#part2Card .pdf-info.show { display: block; }
+#part2Card .shade-selector {
+    display: flex; gap: 6px; align-items: center;
+    margin-top: 5px; font-size: 11px;
+}
+#part2Card .shade-selector select {
+    padding: 3px 6px; font-size: 11px; border-radius: 4px;
+    border: 1px solid #ccc; background: #fff; flex: 1;
+}
+#part2Card .copy-btn { background: #ff9800; font-size: 11px; padding: 6px; margin-top: 4px; }
+#part2Card .shortcut-hint {
+    background: #f5f5f5; border-radius: 4px; padding: 5px 8px;
+    font-size: 10px; color: #666; margin-top: 6px; line-height: 1.6;
+}
+#part2Card .shortcut-hint kbd {
+    background: #fff; border: 1px solid #ccc; border-radius: 3px;
+    padding: 1px 4px; font-family: monospace; font-size: 10px;
+}
+#part2Card .settings-panel {
+    background: #fff3e0; border: 1px solid #ffcc80;
+    border-radius: 6px; padding: 10px; margin-top: 10px;
+}
+#part2Card .settings-panel .settings-title {
+    font-size: 12px; font-weight: bold; color: #e65100;
+    margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
+}
+#part2Card .settings-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+#part2Card .settings-buttons button {
+    flex: 1; min-width: 70px; padding: 7px 8px; font-size: 11px; margin: 0;
+}
+#part2Card .btn-save { background: #4caf50; }
+#part2Card .btn-load { background: #2196f3; }
+#part2Card .btn-clear { background: #f44336; }
+#part2Card .settings-status {
+    font-size: 10px; color: #e65100; margin-top: 6px;
+    text-align: center; min-height: 14px;
+}
+#part2Card .settings-badge {
+    display: inline-block; background: #4caf50; color: #fff;
+    font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-left: 4px;
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.final-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    display: none; justify-content: center; align-items: center;
+    z-index: 10000; padding: 20px;
+}
+.final-modal.show { display: flex; }
+.final-modal-content {
+    background: #fff; border-radius: 12px; width: 100%;
+    max-width: 1200px; height: 100%;
+    max-height: calc(100vh - 40px);
+    display: flex; flex-direction: column; overflow: hidden;
+}
+.final-modal-header {
+    background: linear-gradient(135deg, #6f42c1, #007bff);
+    color: #fff; padding: 14px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.final-modal-header h3 { margin: 0; font-size: 17px; }
+.final-modal-close {
+    background: rgba(255,255,255,0.2); border: none; color: #fff;
+    width: 32px; height: 32px; border-radius: 50%;
+    font-size: 18px; cursor: pointer; padding: 0; margin: 0;
+}
+.final-modal-toolbar {
+    background: #f8f9fa; padding: 10px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex; gap: 8px; flex-wrap: wrap;
+    align-items: center; justify-content: center;
+}
+.final-modal-toolbar button {
+    width: auto; padding: 7px 14px; font-size: 13px; margin: 0;
+}
+.final-modal-toolbar .info { font-size: 13px; color: #333; font-weight: bold; padding: 0 10px; }
+.final-preview-stage {
+    flex: 1; overflow: auto; background: #dde4ec;
+    padding: 20px; text-align: center; min-height: 0;
+}
+.final-preview-stage canvas {
+    display: block; margin: 0 auto 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    background: #fff; border-radius: 3px;
+    max-width: 100%; height: auto;
+}
+.final-modal-footer {
+    background: #f8f9fa; padding: 12px 16px;
+    border-top: 1px solid #e0e0e0;
+    display: flex; gap: 10px; align-items: center;
+    justify-content: center;
+}
+.final-modal-footer button {
+    width: auto; padding: 10px 24px; font-size: 14px; margin: 0;
+}
+.loading-spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #333; color: #fff; padding: 12px 22px;
+    border-radius: 10px; font-size: 0.85rem; opacity: 0;
+    transition: all 0.3s; z-index: 99999;
+    pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    display: flex; align-items: center; gap: 8px;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: #27ae60; }
+.toast.error { background: #c7362b; }
+.toast.info { background: #0d7fb5; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #b9c4d1; border-radius: 4px; }
+</style>
 </head>
 <body>
-<div class="app-container">
+
+<!-- ============================================================
+     TOP BAR
+     ============================================================ -->
+<div class="top-bar">
+    <div class="brand">
+        <span class="logo">P</span>
+        PAN Automation Suite
+    </div>
+    <div class="progress-wrap">
+        <div class="progress-label">
+            <span>प्रगति (Progress)</span>
+            <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+    <div class="stats">
+        <div class="stat">📄 <span class="val" id="statPages">0</span> pages</div>
+        <div class="stat">✍️ <span class="val" id="statFields">0</span> filled</div>
+        <div class="stat">📎 <span class="val" id="statExtras">0</span> extras</div>
+    </div>
+</div>
+
+<!-- ============================================================
+     TABS
+     ============================================================ -->
+<div class="tabs-bar">
+    <button class="tab-btn active" id="tab1Btn" onclick="switchTab(1)">
+        📋 Part 1 — Form 93
+        <span class="tab-badge" id="tab1Badge">Active</span>
+    </button>
+    <button class="tab-btn" id="tab2Btn" onclick="switchTab(2)">
+        🖼️ Part 2 — फोटो + सिग्नेचर
+        <span class="tab-badge" id="tab2Badge">Locked</span>
+    </button>
+</div>
+
+<!-- ============================================================
+     PART 1 — FORM 93
+     ============================================================ -->
+<div class="tab-pane active" id="tab1Pane">
+<div class="p1-container" id="part1Section">
     <div class="form-panel">
         <h2>📄 Form 93 (PAN Application Individual Citizen of India)</h2>
         <div class="sub">✔ Individual | Citizen of India | Real-time PDF preview & download</div>
@@ -229,8 +706,10 @@
         <form id="panForm">
             <!-- PART A -->
             <div class="form-section">
-                <div class="section-title title-main">PART A - Personal Information</div>
-                <div class="section-title" style="margin-top:15px;">1. A. Name (as per documents)</div>
+                <div class="section-title title-main">
+                    <span>PART A - Personal Information <span class="sec-status pending" id="secAStatus">⚠️ Pending</span></span>
+                </div>
+                <div class="section-title" style="margin-top:12px;">1. A. Name (as per documents)</div>
                 <div class="row">
                     <div class="field-group"><label>First Name</label><input type="text" id="firstName" maxlength="25"></div>
                     <div class="field-group"><label>Middle Name</label><input type="text" id="middleName" maxlength="25"></div>
@@ -240,7 +719,7 @@
                 </div>
                 <div class="rule-card">📌 Full name without abbreviations. If Aadhaar has initials, fill full name & expand in 1(B).</div>
 
-                <div class="section-title" style="margin-top: 25px;">1. B. Name (as per Aadhaar) <span class="required">*</span> <button type="button" class="copy-btn" onclick="copySameAs('document')">↩ Same as above (1. A. Name)</button></div>
+                <div class="section-title" style="margin-top: 20px;">1. B. Name (as per Aadhaar) <span class="required">*</span> <button type="button" class="copy-btn" onclick="copySameAs('document')">↩ Same as above (1. A. Name)</button></div>
                 <div class="row">
                     <div class="field-group"><label>Aadhaar First Name</label><input type="text" id="aadhaarFirstName" maxlength="25"></div>
                     <div class="field-group"><label>Aadhaar Middle Name</label><input type="text" id="aadhaarMiddleName" maxlength="25"></div>
@@ -249,7 +728,7 @@
                     <div class="field-group"><label>Aadhaar Last Name</label><input type="text" id="aadhaarLastName" maxlength="25"></div>
                 </div>
 
-                <div class="section-title" style="margin-top: 25px;">2. Gender (select one) <span class="required">*</span></div>
+                <div class="section-title" style="margin-top: 20px;">2. Gender (select one) <span class="required">*</span></div>
                 <div class="row">
                     <div class="radio-group">
                         <label><input type="radio" name="gender" value="Male" checked> Male</label>
@@ -258,13 +737,13 @@
                     </div>
                 </div>
 
-                <div class="section-title" style="margin-top: 25px;">3. Date of Birth (DDMMYYYY) <span class="required">*</span></div>
+                <div class="section-title" style="margin-top: 20px;">3. Date of Birth (DDMMYYYY) <span class="required">*</span></div>
                 <div class="row"><div class="field-group"><input type="text" id="dob" maxlength="8"></div></div>
 
-                <div class="section-title" style="margin-top: 25px;">4. Aadhaar Number (12 digits) <span class="required">*</span></div>
+                <div class="section-title" style="margin-top: 20px;">4. Aadhaar Number (12 digits) <span class="required">*</span></div>
                 <div class="row"><div class="field-group"><input type="text" id="aadhaarNumber" maxlength="12"></div></div>
 
-                <div class="section-title" style="margin-top: 25px;">5. 🏠 Residence Address <span class="required">*</span></div>
+                <div class="section-title" style="margin-top: 20px;">5. 🏠 Residence Address <span class="required">*</span></div>
                 <div class="row">
                     <div class="field-group"><label>Flat/Door/Building</label><input type="text" id="resFlat" maxlength="25"></div>
                     <div class="field-group"><label>Road/Street/Block/Sector</label><input type="text" id="resRoad" maxlength="25"></div>
@@ -282,7 +761,7 @@
                     <div class="field-group"><label>PIN/ZIP CODE</label><input type="text" id="resPin" maxlength="7"></div>
                 </div>
 
-                <div class="section-title" style="margin-top: 25px;">6. 🏢 Office Address <button type="button" class="copy-btn" onclick="copySameAs('residence')">↩ Same as above (5. Residence Address)</button></div>
+                <div class="section-title" style="margin-top: 20px;">6. 🏢 Office Address <button type="button" class="copy-btn" onclick="copySameAs('residence')">↩ Same as above (5. Residence Address)</button></div>
                 <div class="row">
                     <div class="field-group"><label>Flat/Door/Building</label><input type="text" id="offFlat" maxlength="25"></div>
                     <div class="field-group"><label>Road/Street/Block/Sector</label><input type="text" id="offRoad" maxlength="25"></div>
@@ -300,7 +779,7 @@
                     <div class="field-group"><label>PIN/ZIP CODE</label><input type="text" id="offPin" maxlength="7"></div>
                 </div>
 
-                <div class="section-title" style="margin-top: 25px;">7. Residential Status <span class="required">*</span></div>
+                <div class="section-title" style="margin-top: 20px;">7. Residential Status <span class="required">*</span></div>
                 <div class="row">
                     <div class="field-group"><label>Residential Status</label>
                         <select id="resStatus">
@@ -311,13 +790,13 @@
                     </div>
                 </div>
 
-                <div class="section-title" style="margin-top: 25px;">8. Passport Number</div>
+                <div class="section-title" style="margin-top: 20px;">8. Passport Number</div>
                 <div class="row"><div class="field-group"><input type="text" id="passport" maxlength="12"></div></div>
 
-                <div class="section-title" style="margin-top: 25px;">9. TIN</div>
+                <div class="section-title" style="margin-top: 20px;">9. TIN</div>
                 <div class="row"><div class="field-group"><input type="text" id="tin" maxlength="20"></div></div>
 
-                <div class="section-title" style="margin-top: 15px;">10. 📞 Contact Details <span class="required">*</span></div>
+                <div class="section-title" style="margin-top: 12px;">10. 📞 Contact Details <span class="required">*</span></div>
                 <div class="row">
                     <div class="field-group"><label>Country Code <span class="required">*</span></label><input type="text" id="countryCode" maxlength="3"></div>
                     <div class="field-group"><label>Mobile No. <span class="required">*</span></label><input type="text" id="mobileNum" maxlength="10"></div>
@@ -333,8 +812,10 @@
 
             <!-- PART B -->
             <div class="form-section">
-                <div class="section-title title-main">PART B- Source of Income</div>
-                <div class="section-title" style="margin-top: 15px;">11. 💰 Source of Income</div>
+                <div class="section-title title-main">
+                    <span>PART B - Source of Income</span>
+                </div>
+                <div class="section-title" style="margin-top: 12px;">11. 💰 Source of Income</div>
                 <div class="check-group">
                     <label><input type="checkbox" name="income" value="Salary" checked class="income-checkbox" onclick="updateIncomeFields(event)"> Salary</label>
                     <label><input type="checkbox" name="income" value="Business" class="income-checkbox" onclick="updateIncomeFields(event)"> Business</label>
@@ -347,32 +828,36 @@
 
             <!-- PART C -->
             <div class="form-section">
-                <div class="section-title title-main">PART C - Details of Parents</div>
-                <div class="section-title" style="margin-top:15px;">12. Single parent?</div>
+                <div class="section-title title-main">
+                    <span>PART C - Details of Parents</span>
+                </div>
+                <div class="section-title" style="margin-top:12px;">12. Single parent?</div>
                 <div class="row"><div class="field-group"><select id="singleParent"><option value="No">No</option><option value="Yes">Yes (single guardian)</option></select></div></div>
 
-                <div class="section-title" style="margin-top: 25px;">13. Father's Details</div>
+                <div class="section-title" style="margin-top: 20px;">13. Father's Details</div>
                 <div class="row">
                     <div class="field-group"><label>First Name</label><input type="text" id="fatherFirst" maxlength="25"></div>
                     <div class="field-group"><label>Middle Name</label><input type="text" id="fatherMiddle" maxlength="25"></div>
                 </div>
                 <div class="row"><div class="field-group"><label>Last Name <span class="required">*</span></label><input type="text" id="fatherLast" maxlength="25"></div></div>
 
-                <div class="section-title" style="margin-top: 25px;">14. Mother's Details</div>
+                <div class="section-title" style="margin-top: 20px;">14. Mother's Details</div>
                 <div class="row">
                     <div class="field-group"><label>First Name</label><input type="text" id="motherFirst" maxlength="25"></div>
                     <div class="field-group"><label>Middle Name</label><input type="text" id="motherMiddle" maxlength="25"></div>
                 </div>
                 <div class="row"><div class="field-group"><label>Last Name <span class="required">*</span></label><input type="text" id="motherLast" maxlength="25"></div></div>
 
-                <div class="section-title" style="margin-top: 25px;">15. Print parent on PAN card</div>
+                <div class="section-title" style="margin-top: 20px;">15. Print parent on PAN card</div>
                 <div class="row"><div class="field-group"><select id="printParent"><option value="Father">Father</option><option value="Mother">Mother</option></select></div></div>
             </div>
 
             <!-- PART D -->
             <div class="form-section">
-                <div class="section-title title-main">PART D - Assessing Officer (AO Code)</div>
-                <div class="section-title" style="margin-top: 15px;">16. AO Code</div>
+                <div class="section-title title-main">
+                    <span>PART D - Assessing Officer (AO Code)</span>
+                </div>
+                <div class="section-title" style="margin-top: 12px;">16. AO Code</div>
                 <div class="row">
                     <div class="field-group"><label>Area Code</label><input type="text" id="aoArea" maxlength="3"></div>
                     <div class="field-group"><label>AO Type</label><input type="text" id="aoType" maxlength="2"></div>
@@ -383,18 +868,20 @@
 
             <!-- PART E -->
             <div class="form-section">
-                <div class="section-title title-main">PART E - Representative Assessee</div>
-                <div class="section-title" style="margin-top:15px;">17. RA Details</div>
+                <div class="section-title title-main">
+                    <span>PART E - Representative Assessee</span>
+                </div>
+                <div class="section-title" style="margin-top:12px;">17. RA Details</div>
                 <div class="row">
                     <div class="field-group"><label>RA First Name</label><input type="text" id="raFirst" maxlength="25"></div>
                     <div class="field-group"><label>RA Middle Name</label><input type="text" id="raMiddle" maxlength="25"></div>
                 </div>
                 <div class="row"><div class="field-group"><label>RA Last Name</label><input type="text" id="raLast" maxlength="25"></div></div>
-                <div class="section-title" style="margin-top:15px;">18. RA PAN</div>
+                <div class="section-title" style="margin-top:12px;">18. RA PAN</div>
                 <div class="row"><div class="field-group"><input type="text" id="raPan" maxlength="10"></div></div>
-                <div class="section-title" style="margin-top:15px;">19. RA Aadhaar</div>
+                <div class="section-title" style="margin-top:12px;">19. RA Aadhaar</div>
                 <div class="row"><div class="field-group"><input type="text" id="raAadhaar" maxlength="12"></div></div>
-                <div class="section-title" style="margin-top:15px;">20. RA Address</div>
+                <div class="section-title" style="margin-top:12px;">20. RA Address</div>
                 <div class="row">
                     <div class="field-group"><label>RA Flat/Door/Building</label><input type="text" id="raFlat" maxlength="25"></div>
                     <div class="field-group"><label>RA Road/Street/Block/Sector</label><input type="text" id="raRoad" maxlength="25"></div>
@@ -411,7 +898,7 @@
                     <div class="field-group"><label>RA Country/Region</label><input type="text" id="raCountry" value="INDIA"></div>
                     <div class="field-group"><label>RA PIN/ZIP CODE</label><input type="text" id="raPin" maxlength="7"></div>
                 </div>
-                <div class="section-title" style="margin-top: 15px;">21. RA Contact Details</div>
+                <div class="section-title" style="margin-top: 12px;">21. RA Contact Details</div>
                 <div class="row">
                     <div class="field-group"><label>Country Code</label><input type="text" id="racountryCode" maxlength="3"></div>
                     <div class="field-group"><label>Mobile No.</label><input type="text" id="ramobileNum" maxlength="10"></div>
@@ -425,8 +912,10 @@
 
             <!-- PART F -->
             <div class="form-section">
-                <div class="section-title title-main">Part F: Communication Address</div>
-                <div class="section-title" style="margin-top:15px;">22. Address for Communication</div>
+                <div class="section-title title-main">
+                    <span>Part F: Communication Address</span>
+                </div>
+                <div class="section-title" style="margin-top:12px;">22. Address for Communication</div>
                 <div class="row">
                     <div class="field-group"><select id="addCom">
                         <option value="reAddress">Residence Address</option>
@@ -438,8 +927,10 @@
 
             <!-- PART G -->
             <div class="form-section">
-                <div class="section-title title-main">Part G: Declaration</div>
-                <div class="section-title" style="margin-top:15px;">23. Proof documents (Applicant)</div>
+                <div class="section-title title-main">
+                    <span>Part G: Declaration</span>
+                </div>
+                <div class="section-title" style="margin-top:12px;">23. Proof documents (Applicant)</div>
                 <div class="row">
                     <div class="field-group"><select id="dobProof">
                         <option value="dobPOI">Proof of Identity</option>
@@ -447,7 +938,7 @@
                         <option value="dobPOB">Proof of Date of Birth</option>
                     </select></div>
                 </div>
-                <div class="section-title" style="margin-top:15px;">24. Proof documents (RA)</div>
+                <div class="section-title" style="margin-top:12px;">24. Proof documents (RA)</div>
                 <div class="row">
                     <div class="field-group"><select id="raProof">
                         <option value="raPOI">Proof of Identity</option>
@@ -458,10 +949,11 @@
 
             <!-- PART H -->
             <div class="form-section">
-                <div class="section-title title-main">Part H: Verification & Declaration</div>
-
+                <div class="section-title title-main">
+                    <span>Part H: Verification & Declaration</span>
+                </div>
                 <div class="declaration-box">
-                    <p style="margin:0 0 12px 0;">
+                    <p style="margin:0 0 10px 0;">
                         <strong>a.</strong> I, <span class="blank-line">&nbsp;</span>, in the capacity of 
                         <span class="blank-line">&nbsp;</span> (Self/ Representative Assessee) do hereby declare that 
                         what is stated above is true to the best of my knowledge and belief.
@@ -471,7 +963,7 @@
                     </p>
                 </div>
 
-                <div class="section-title" style="margin-top:15px;">25. Declaration Details</div>
+                <div class="section-title" style="margin-top:12px;">25. Declaration Details</div>
                 <div class="row">
                     <div class="field-group">
                         <label>Name (I, ___ ) — auto from Part A</label>
@@ -489,14 +981,14 @@
                     <div class="field-group"><label>Place</label><input type="text" id="declPlace" maxlength="50"></div>
                     <div class="field-group"><label>Date (DD/MM/YYYY)</label><input type="text" id="declDate" maxlength="10"></div>
                 </div>
-                <div class="section-title" style="margin-top:15px;">26. Signature Block</div>
+                <div class="section-title" style="margin-top:12px;">26. Signature Block</div>
                 <div class="row">
                     <div class="field-group"><label>Name</label><input type="text" id="signName" maxlength="60" placeholder="Auto-filled"></div>
                     <div class="field-group"><label>Designation</label><input type="text" id="signDesignation" maxlength="50" placeholder="e.g. SELF"></div>
                 </div>
 
-                <div class="rule-card" style="margin-top:16px;">
-                    🖱️ <strong>Position adjust karne ke liye:</strong> PDF preview ke upar "🎯 Enable Drag to Position" button dabayein. Phir yellow boxes ko drag karke exact jagah set karein. Download mein wahi position use hogi.
+                <div class="rule-card" style="margin-top:14px;">
+                    🖱️ <strong>Position adjust karne ke liye:</strong> PDF preview ke upar "🎯 Enable Drag" dabayein. Phir yellow boxes ko drag karke exact jagah set karein.
                 </div>
             </div>
 
@@ -505,548 +997,1909 @@
 
     <div class="preview-panel">
         <div class="preview-header">
-            <h3 style="margin:0;">📄 Live PDF Preview</h3>
+            <h3>📄 Live PDF Preview</h3>
             <button type="button" id="refreshPreviewBtn" class="primary">🔄 Refresh</button>
-            <button type="button" id="toggleDragBtn" class="primary">🎯 Enable Drag to Position</button>
-            <button type="button" id="downloadPdfBtn" class="primary">⬇️ Download Filled PDF</button>
+            <button type="button" id="toggleDragBtn" class="primary">🎯 Enable Drag</button>
+            <button type="button" id="downloadPdfBtn" class="primary">⬇️ Download & Continue</button>
         </div>
         <div class="drag-hint" id="dragHint" style="display:none;">
-            🟡 Yellow boxes ko drag karke Part H ke text ki exact position set karein. Click "🛑 Disable Drag" jab ho jaye.
+            🟡 Yellow boxes को drag करके Part H के text की exact position set करें।
         </div>
         <div class="pdf-viewer" id="pdfPreviewContainer">
             <div style="padding: 40px; text-align:center; color:#68869e;">
                 ⬆️ Click "Load Form 93 PDF template" to select your PDF file.<br/>
                 After upload, drag Part H labels to position them exactly.<br/>
-                Click "Download Filled PDF" to save.
+                Click "Download & Continue" to move to Part 2.
             </div>
         </div>
     </div>
 </div>
+</div>
+
+<!-- ============================================================
+     PART 2 — PHOTO/SIGN
+     ============================================================ -->
+<div class="tab-pane" id="tab2Pane">
+<div id="part2Section">
+    <div id="part2Card">
+    <h2>PAN फॉर्म ऑटोमेशन टूल — फोटो + सिग्नेचर</h2>
+
+    <div class="layout">
+        <div class="left-panel">
+            <div class="form-group">
+                <label>1. PAN कार्ड PDF फॉर्म चुनें:</label>
+                <input type="file" id="pdfInput" accept="application/pdf">
+                <div class="filename" id="pdfName"></div>
+                <div class="pdf-info" id="pdfInfo"></div>
+                <div id="autoLoadedBadge" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;color:#1b5e20;font-size:11px;padding:5px 8px;border-radius:4px;margin-top:5px;">
+                    ✅ Part 1 की PDF auto-load हो गई है
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>2. आवेदक की फोटो चुनें (JPG/PNG):</label>
+                <input type="file" id="photoInput" accept="image/jpeg, image/png, image/jpg">
+                <div class="filename" id="photoName"></div>
+                <div class="file-preview-thumb" id="photoThumbWrap">
+                    <img id="photoThumb" alt="photo preview">
+                    <div class="thumb-label">Photo Preview</div>
+                </div>
+                <div class="hint">📌 फोटो सिर्फ <b>पेज 1</b> पर दो जगह लगेगी।</div>
+            </div>
+
+            <div class="form-group">
+                <label>3. आवेदक का सिग्नेचर / अंगूठा चुनें (JPG/PNG):</label>
+                <input type="file" id="signInput" accept="image/jpeg, image/png, image/jpg">
+                <div class="filename" id="signName"></div>
+                <div class="file-preview-thumb" id="signThumbWrap">
+                    <img id="signThumb" alt="sign preview">
+                    <div class="thumb-label" id="signThumbLabel">Signature Preview</div>
+                </div>
+
+                <div class="checkbox-row" style="margin-top:4px;">
+                    <input type="checkbox" id="signAutoProcess" checked>
+                    <label for="signAutoProcess" style="font-weight:normal;margin:0;">
+                        सिग्नेचर को ऑटो ट्रांसपेरेंट + काली स्याही
+                    </label>
+                </div>
+
+                <div class="checkbox-row" style="margin-top:2px; background:#e3f2fd; padding:6px 8px; border-radius:6px;">
+                    <input type="checkbox" id="thumbBlueInk">
+                    <label for="thumbBlueInk" style="font-weight:bold;margin:0;color:#0d47a1;">
+                        👍 अंगूठा (Thumb Impression) — नीली स्याही में
+                    </label>
+                </div>
+                <div class="thumb-blue-note" id="thumbBlueNote" style="display:none;">
+                    ✅ अंगूठे की छवि को नीली स्याही (Blue Ink) में बदला जाएगा।
+                    <div class="shade-selector">
+                        <span>Shade:</span>
+                        <select id="blueShade">
+                            <option value="light">हल्का नीला (Light)</option>
+                            <option value="medium" selected>मध्यम नीला (Medium)</option>
+                            <option value="dark">गहरा नीला (Dark)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="hint">📌 सिग्नेचर/अंगूठा सिर्फ <b>पेज 1 और पेज 2</b> पर लगेगा।</div>
+            </div>
+
+            <div class="form-group">
+                <div class="extras-header">
+                    <label>4. अतिरिक्त दस्तावेज़ (ID/Address proof):</label>
+                </div>
+                <input type="file" id="extraInput" accept="image/jpeg, image/png, image/jpg, application/pdf" multiple>
+                <div class="hint">📄 हर दस्तावेज़ main PDF के बाद नए पेज (3, 4, 5...) के रूप में जुड़ेगा।</div>
+                <div class="extras-list" id="extrasList">
+                    <div style="padding:8px;color:#888;font-size:12px;">अभी कोई अतिरिक्त दस्तावेज़ नहीं जोड़ा गया।</div>
+                </div>
+            </div>
+
+            <button class="secondary" onclick="loadAndPreview()">📄 PDF लोड करें और प्रीव्यू देखें</button>
+
+            <div class="settings-panel">
+                <div class="settings-title">
+                    💾 Settings Save / Load
+                    <span class="settings-badge" id="autoSaveBadge" style="display:none;">Auto-Saved</span>
+                </div>
+                <div class="settings-buttons">
+                    <button class="btn-save" onclick="saveSettings(true)">💾 Save</button>
+                    <button class="btn-load" onclick="loadSettings(true)">📂 Load</button>
+                    <button class="btn-clear" onclick="clearSettings()">🗑️ Clear</button>
+                </div>
+                <div class="settings-status" id="settingsStatus">
+                    💡 Settings auto-save होती हैं
+                </div>
+            </div>
+
+            <div class="controls" id="controlsPanel" style="display:none;">
+                <div class="tab-buttons">
+                    <button id="tabPhoto" class="active" onclick="selectTab('photo')">
+                        📷 फोटो <span class="badge">नीला</span>
+                    </button>
+                    <button id="tabSign" onclick="selectTab('sign')">
+                        ✍️ साइन <span class="badge pink">गुलाबी</span>
+                    </button>
+                </div>
+
+                <div class="hint">💡 प्रीव्यू में बॉक्स ड्रैग करें, कोने से साइज़ बदलें।</div>
+
+                <div id="photoControls">
+                    <div class="page-note">📌 फोटो का placement सिर्फ पेज 1 के लिए है।</div>
+                    <div class="lock-status-bar" id="photoLockBar">
+                        🔓 <b>अनलॉक</b> — फोटो को ड्रैग कर सकते हैं।
+                    </div>
+                    <div class="controls-row"><label>X</label>
+                        <input type="range" id="pX" min="0" max="800" value="484">
+                        <input type="number" id="pXn" value="484"></div>
+                    <div class="controls-row"><label>Y</label>
+                        <input type="range" id="pY" min="0" max="1000" value="592">
+                        <input type="number" id="pYn" value="592"></div>
+                    <div class="controls-row"><label>चौड़ाई</label>
+                        <input type="range" id="pW" min="20" max="250" value="100">
+                        <input type="number" id="pWn" value="100"></div>
+                    <div class="controls-row"><label>ऊँचाई</label>
+                        <input type="range" id="pH" min="20" max="250" value="132">
+                        <input type="number" id="pHn" value="132"></div>
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="photoLeft" checked>
+                        <label for="photoLeft" style="font-weight:normal;margin:0;">बाएँ कोने पर भी फोटो लगाएँ</label>
+                    </div>
+                    <button class="lock-btn" id="photoLockBtn" onclick="toggleLock('photo')">
+                        🔓 फोटो लॉक करें
+                    </button>
+                </div>
+
+                <div id="signControls" style="display:none;">
+                    <div class="page-note">📌 सिग्नेचर सिर्फ पेज 1 और (optional) पेज 2 पर लगेगा।</div>
+                    <div class="lock-status-bar" id="signLockBar">
+                        🔓 <b>अनलॉक</b> — सिग्नेचर को ड्रैग कर सकते हैं।
+                    </div>
+                    <div id="signPage1Block">
+                        <div style="font-size:11px;color:#555;margin-bottom:4px;">
+                            <b>पेज 1 (ऊपर वाला sign):</b>
+                        </div>
+                        <div class="controls-row"><label>X</label>
+                            <input type="range" id="sX" min="0" max="800" value="20">
+                            <input type="number" id="sXn" value="20"></div>
+                        <div class="controls-row"><label>Y</label>
+                            <input type="range" id="sY" min="0" max="1000" value="615">
+                            <input type="number" id="sYn" value="615"></div>
+                        <div class="controls-row"><label>चौड़ाई</label>
+                            <input type="range" id="sW" min="20" max="300" value="110">
+                            <input type="number" id="sWn" value="110"></div>
+                        <div class="controls-row"><label>ऊँचाई</label>
+                            <input type="range" id="sH" min="10" max="150" value="45">
+                            <input type="number" id="sHn" value="45"></div>
+                    </div>
+                    <div id="signPage2Block">
+                        <div style="font-size:11px;color:#555;margin:6px 0 4px;">
+                            <b>पेज 2 (नीचे वाला sign):</b>
+                        </div>
+                        <div class="controls-row"><label>X</label>
+                            <input type="range" id="s2X" min="0" max="800" value="410">
+                            <input type="number" id="s2Xn" value="410"></div>
+                        <div class="controls-row"><label>Y</label>
+                            <input type="range" id="s2Y" min="0" max="1000" value="125">
+                            <input type="number" id="s2Yn" value="125"></div>
+                        <div class="controls-row"><label>चौड़ाई</label>
+                            <input type="range" id="s2W" min="20" max="300" value="120">
+                            <input type="number" id="s2Wn" value="120"></div>
+                        <div class="controls-row"><label>ऊँचाई</label>
+                            <input type="range" id="s2H" min="10" max="150" value="45">
+                            <input type="number" id="s2Hn" value="45"></div>
+                    </div>
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="signPage2" checked>
+                        <label for="signPage2" style="font-weight:normal;margin:0;">पेज 2 पर भी सिग्नेचर लगाएँ</label>
+                    </div>
+                    <button class="lock-btn" id="signLockBtn" onclick="toggleLock('sign')">
+                        🔓 सिग्नेचर लॉक करें
+                    </button>
+                    <button class="secondary copy-btn" onclick="copySignPosToPage2()">
+                        📋 पेज 1 का position पेज 2 पर copy करें
+                    </button>
+                </div>
+
+                <button class="secondary" onclick="lockAll()" style="margin-top:8px;background:#17a2b8;">
+                    🔒 सभी को एक साथ लॉक करें
+                </button>
+                <button class="warn" onclick="resetPosition()" style="margin-top:6px;">🔄 डिफ़ॉल्ट पोज़िशन पर रीसेट करें</button>
+                <div class="shortcut-hint">
+                    ⌨️ <kbd>←</kbd>/<kbd>→</kbd> पेज • <kbd>Ctrl</kbd>+<kbd>S</kbd> डाउनलोड • <kbd>Esc</kbd> बंद
+                </div>
+            </div>
+
+            <button class="preview-btn" id="finalPreviewBtn" onclick="openFinalPreview()" disabled>
+                🔍 Final Preview देखें
+            </button>
+            <button class="download-btn" id="processBtn" onclick="processPDF()" disabled>
+                ✅ सीधे PDF डाउनलोड करें
+            </button>
+            <div id="statusMessage" class="status"></div>
+            <a id="downloadLink" class="download-link" style="display:none;"></a>
+        </div>
+
+        <div class="right-panel">
+            <div class="preview-wrap">
+                <div class="preview-toolbar">
+                    <button class="secondary" onclick="prevPage()" id="prevBtn" disabled>◀ पिछला</button>
+                    <span id="pageInfo">पेज - / -</span>
+                    <button class="secondary" onclick="nextPage()" id="nextBtn" disabled>अगला ▶</button>
+                    <span class="zoom-label" style="margin-left:12px;">ज़ूम:</span>
+                    <input type="range" id="zoomRange" min="0.6" max="3" step="0.1" value="1.4">
+                    <button class="secondary" onclick="fitToWidth()">↔ फिट</button>
+                </div>
+                <div class="preview-stage-outer" id="previewOuter">
+                    <div class="preview-stage" id="previewStage">
+                        <div id="emptyPreview">
+                            अभी कोई PDF लोड नहीं हुई है।<br>
+                            कृपया PDF चुनें और "PDF लोड करें" पर क्लिक करें।
+                        </div>
+                        <canvas id="pdfCanvas" style="display:none;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================
+     FINAL MODAL
+     ============================================================ -->
+<div class="final-modal" id="finalModal">
+    <div class="final-modal-content">
+        <div class="final-modal-header">
+            <h3>🔍 Final Preview — सभी दस्तावेज़ मर्ज होकर तैयार</h3>
+            <button class="final-modal-close" onclick="closeFinalPreview()">✕</button>
+        </div>
+        <div class="final-modal-toolbar">
+            <button class="secondary small" onclick="finalZoomOut()">➖ छोटा</button>
+            <span class="info" id="finalZoomInfo">100%</span>
+            <button class="secondary small" onclick="finalZoomIn()">➕ बड़ा</button>
+            <button class="secondary small" onclick="finalFitWidth()">↔ फिट</button>
+            <span class="info" id="finalPageCount">—</span>
+        </div>
+        <div class="final-preview-stage" id="finalPreviewStage"></div>
+        <div class="final-modal-footer">
+            <button class="warn" onclick="closeFinalPreview()">✕ बंद करें</button>
+            <button class="secondary" onclick="printFinalPDF()">🖨️ Print</button>
+            <button class="download-btn" onclick="downloadFinalPDF()" style="margin:0;">
+                📥 Final PDF डाउनलोड करें
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-    // ---------- Global state ----------
-    let currentPdfBytes = null;
-    let cachedFont = null;
-    let pdfDocCache = null;
-    let templateFileName = '';
+/* ============================================================
+   GLOBAL
+   ============================================================ */
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    // ============================================================
-    // PART H DEFAULT POSITIONS
-    // ============================================================
-    // Applied adjustments (cumulative):
-    //   Name (I, ___)       -> +30 y       (250 -> 280)
-    //   Capacity            -> 30px right from 235 -> 265
-    //   Place               -> +15 y       (200 -> 215)
-    //   Date                -> +15 y       (185 -> 200)
-    //   Sign Name           -> +15 y       (60 -> 75)
-    //   Sign Designation    -> -25 y       (67 -> 42)
-    // ============================================================
-    const partHPositions = {
-        declName:        { x: 95,  y: 280, page: 1, size: 9, maxWidth: 200 }, // +30 y
-        declCapacity:    { x: 265, y: 280, page: 1, size: 9, maxWidth: 90  }, // 30px right
-        declPlace:       { x: 75,  y: 215, page: 1, size: 9, maxWidth: 150 }, // +15 y
-        declDate:        { x: 75,  y: 200, page: 1, size: 9, maxWidth: 150 }, // +15 y
-        signName:        { x: 420, y: 75,  page: 1, size: 9, maxWidth: 150 }, // +15 y
-        signDesignation: { x: 420, y: 42,  page: 1, size: 9, maxWidth: 150 }, // -25 y
-    };
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+function switchTab(n) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (n === 1) {
+        document.getElementById('tab1Pane').classList.add('active');
+        document.getElementById('tab1Btn').classList.add('active');
+    } else {
+        document.getElementById('tab2Pane').classList.add('active');
+        document.getElementById('tab2Btn').classList.add('active');
+    }
+    updateProgress();
+}
 
-    const partHLabels = {
-        declName:        'I, (Name)',
-        declCapacity:    'Capacity',
-        declPlace:       'Place',
-        declDate:        'Date',
-        signName:        'Sign Name',
-        signDesignation: 'Designation',
-    };
+document.addEventListener('keydown', (e) => {
+    if (e.altKey && e.key === '1') { e.preventDefault(); switchTab(1); }
+    if (e.altKey && e.key === '2') { e.preventDefault(); switchTab(2); }
+});
 
-    let dragModeActive = false;
-    let dragOverlayEl = null;
-
-    // Helper uppercase for text inputs
-    document.querySelectorAll('input[type="text"], input[type="email"]').forEach(inp => {
-        if(inp.type !== 'email') {
-            inp.addEventListener('input', function(e) { this.value = this.value.toUpperCase(); });
-        }
+/* ============================================================
+   PROGRESS & STATS
+   ============================================================ */
+function updateProgress() {
+    const fields = ['firstName','lastName','dob','aadhaarNumber','mobileNum','email','declName','declPlace','declDate','fatherLast','motherLast'];
+    let filled = 0;
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value.trim()) filled++;
     });
 
-    // Auto-fill Part H from Part A
-    function autoFillPartH() {
-        const fn = document.getElementById('firstName').value.trim();
-        const mn = document.getElementById('middleName').value.trim();
-        const ln = document.getElementById('lastName').value.trim();
-        const fullName = [fn, mn, ln].filter(Boolean).join(' ');
+    // Part 1 progress (up to 70%)
+    const p1Pct = Math.min(70, Math.round((filled / fields.length) * 70));
 
-        const declNameField = document.getElementById('declName');
-        const signNameField = document.getElementById('signName');
-        const signDesignationField = document.getElementById('signDesignation');
+    // Part 2 progress (up to 30%)
+    let p2Pct = 0;
+    if (state.pdfBytes) p2Pct += 10;
+    if (state.photoBytes) p2Pct += 10;
+    if (state.signBytes) p2Pct += 10;
 
-        if (!declNameField.dataset.manual) declNameField.value = fullName;
-        if (!signNameField.dataset.manual) signNameField.value = fullName;
-        if (!signDesignationField.dataset.manual && !signDesignationField.value) {
-            signDesignationField.value = 'SELF';
-        }
-    }
-    ['firstName','middleName','lastName'].forEach(id => {
-        document.getElementById(id).addEventListener('input', autoFillPartH);
-    });
-    document.getElementById('declName').addEventListener('input', function() { this.dataset.manual = 'true'; });
-    document.getElementById('signName').addEventListener('input', function() { this.dataset.manual = 'true'; });
-    document.getElementById('signDesignation').addEventListener('input', function() { this.dataset.manual = 'true'; });
+    const total = p1Pct + p2Pct;
+    document.getElementById('progressFill').style.width = total + '%';
+    document.getElementById('progressPct').textContent = total + '%';
 
-    // Upload handler
-    const fileUpload = document.getElementById('staticPdfUpload');
-    const fileStatus = document.getElementById('fileStatus');
+    document.getElementById('statFields').textContent = filled;
+    document.getElementById('statPages').textContent = state.totalPages || 0;
+    document.getElementById('statExtras').textContent = state.extras.length;
 
-    fileUpload.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        try {
-            const bytes = await file.arrayBuffer();
-            currentPdfBytes = bytes;
-            templateFileName = file.name;
-
-            const tempDoc = await PDFLib.PDFDocument.load(bytes);
-            pdfDocCache = tempDoc;
-
-            const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf';
-            try {
-                const fontResp = await fetch(fontUrl);
-                const fontBuf = await fontResp.arrayBuffer();
-                cachedFont = await tempDoc.embedFont(fontBuf);
-            } catch(err) {
-                cachedFont = await tempDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-            }
-
-            fileStatus.innerHTML = `✅ Loaded: <strong>${file.name}</strong> (${(file.size/1024).toFixed(1)} KB)`;
-            await generateFilledPdfAndPreview(true, false);
-        } catch (err) {
-            console.error('PDF load error:', err);
-            fileStatus.textContent = '❌ Error loading PDF. Please try another file.';
-            alert('Error loading PDF. Make sure it is a valid PDF file.');
-        }
-    });
-
-    async function generateFilledPdfAndPreview(onlyPreview = false, needToValidate = true) {
-        if (!currentPdfBytes) {
-            alert("Please upload Form 93 PDF template first.");
-            return null;
-        }
-
-        const firstName = document.getElementById('firstName').value.trim();
-        const lastName = document.getElementById('lastName').value.trim();
-        const aadhaar = document.getElementById('aadhaarNumber').value.replace(/\D/g,'');
-        const dob = document.getElementById('dob').value.trim();
-        const mobile = document.getElementById('mobileNum').value.trim();
-        const cCode = document.getElementById('countryCode').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const incomes = document.querySelectorAll('input[name="income"]:checked');
-        const fileName = `${firstName || 'Applicant'}_${lastName}_PAN_Form93.pdf`;
-
-        if(needToValidate){
-            if(!lastName) { alert("Last name required"); return null; }
-            if(aadhaar.length !== 12) { alert("Aadhaar must be 12 digits"); return null; }
-            if(!/^\d{8}$/.test(dob)) { alert("DOB must be 8 digits (DDMMYYYY)"); return null; }
-            if(mobile.length < 10) { alert("Valid mobile number required"); return null; }
-            if(cCode.length < 1) { alert("Valid country code required"); return null; }
-            if(!email.includes('@')) { alert("Valid email required"); return null; }
-            if(incomes.length === 0) { alert("Select at least one Source of Income"); return null; }
-        }
-
-        const pdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
-        pdfDoc.registerFontkit(fontkit);
-        let font = cachedFont;
-        if(!font) {
-            font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-        }
-        const pages = pdfDoc.getPages();
-
-        function drawCentered(page, text, startX, y, cellWidth, fontObj, fontSize=9) {
-            if(!text) return;
-            const str = text.toString().toUpperCase();
-            for(let i=0; i<str.length && i<50; i++) {
-                const ch = str[i];
-                const w = fontObj.widthOfTextAtSize(ch, fontSize);
-                const cx = startX + i*cellWidth + (cellWidth - w)/2;
-                page.drawText(ch, { x: cx, y: y, size: fontSize, font: fontObj });
-            }
-        }
-        function drawDigitsArray(page, digitsStr, xs, y, cellWidth, fontObj, fontSize=9) {
-            if(!digitsStr) return;
-            const arr = digitsStr.toString().split('');
-            for(let i=0; i<arr.length && i<xs.length; i++) {
-                const ch = arr[i];
-                const w = fontObj.widthOfTextAtSize(ch, fontSize);
-                const cx = xs[i] + (cellWidth - w)/2;
-                page.drawText(ch, { x: cx, y: y, size: fontSize, font: fontObj });
-            }
-        }
-        function drawTick(page, x, y) {
-            page.drawLine({ start: { x, y: y+3 }, end: { x: x+3, y }, thickness: 1.5, color: PDFLib.rgb(0,0,0) });
-            page.drawLine({ start: { x: x+3, y }, end: { x: x+9, y: y+7 }, thickness: 1.5, color: PDFLib.rgb(0,0,0) });
-        }
-        function drawFullText(page, text, startX, y, maxWidth, fontObj, maxFont=10, key="") {
-            if(!text) return;
-            const str = text.toUpperCase();
-            const fontSize = getFittingFontSize(str, fontObj, maxWidth, maxFont, 5, key);
-            drawTextSpaced({ page, text: str, x: startX, y, fontSize, font: fontObj, letterSpacing: 0 });
-        }
-        function getFittingFontSize(text, font, maxWidth, maxFontSize = 12, minFontSize = 4, key = "") {
-            if (key == "email") return 9;
-            let fontSize = maxFontSize;
-            while (fontSize >= minFontSize) {
-                const textWidth = font.widthOfTextAtSize(text, fontSize);
-                if (textWidth <= maxWidth) return fontSize - 0.2;
-                fontSize -= 0.2;
-            }
-            return minFontSize;
-        }
-        function drawTextSpaced({ page, text, x, y, font, fontSize = 12, letterSpacing = 5 }) {
-            let currentX = x;
-            for (let i = 0; i < text.length; i++) {
-                page.drawText(text[i], { x: currentX, y, size: fontSize, font });
-                const charWidth = font.widthOfTextAtSize(text[i], fontSize);
-                currentX += charWidth + letterSpacing;
-            }
-        }
-
-        const genderVal = document.querySelector('input[name="gender"]:checked')?.value;
-        const isMale = genderVal === 'Male', isFemale = genderVal === 'Female', isTrans = genderVal === 'Transgender';
-        const resStatusVal = document.getElementById('resStatus').value;
-        const addCom = document.getElementById("addCom").value;
-        const dobProof = document.getElementById("dobProof").value;
-        const raProof = document.getElementById("raProof").value;
-
-        // Page 0
-        drawCentered(pages[0], document.getElementById('firstName').value, 180.61, 637.89, 15.35, font);
-        drawCentered(pages[0], document.getElementById('middleName').value, 180.73, 623.89, 15.35, font);
-        drawCentered(pages[0], document.getElementById('lastName').value, 180.73, 610.89, 15.35, font);
-        drawCentered(pages[0], document.getElementById('aadhaarFirstName').value, 180.56, 579.89, 15.34, font);
-        drawCentered(pages[0], document.getElementById('aadhaarMiddleName').value, 180.84, 565.89, 15.34, font);
-        drawCentered(pages[0], document.getElementById('aadhaarLastName').value, 180.61, 552.89, 15.35, font);
-        if(isMale) drawTick(pages[0], 183, 540);
-        if(isFemale) drawTick(pages[0], 229, 540);
-        if(isTrans) drawTick(pages[0], 291, 540);
-        const dobVal = document.getElementById('dob').value;
-        const dobXs = [180.78,195.69,226.63,242.90,272.72,287.63,302.53,317.44,332.34,347.25];
-        drawDigitsArray(pages[0], dobVal, dobXs, 526.39, 14.91, font);
-        const aadhaarXs = [180.78,195.69,211.60,227.01,242.42,257.33,272.74,287.65,302.56,316.47,332.38,347.29];
-        drawDigitsArray(pages[0], document.getElementById('aadhaarNumber').value, aadhaarXs, 513.19, 14.90, font);
-        drawCentered(pages[0], document.getElementById('resFlat').value, 180.59, 482.89, 15.34, font);
-        drawCentered(pages[0], document.getElementById('resRoad').value, 180.74, 469.39, 15.34, font);
-        drawCentered(pages[0], document.getElementById('resPo').value, 180.81, 455.39, 15.34, font);
-        drawCentered(pages[0], document.getElementById('resArea').value, 180.95, 442.39, 15.35, font);
-        drawCentered(pages[0], document.getElementById('resDistrict').value, 181.02, 429, 15.35, font);
-        drawFullText(pages[0], document.getElementById('resState').value, 135.07, 415.09, 82, font);
-        drawFullText(pages[0], document.getElementById('resCountry').value, 292.8, 415.09, 82, font);
-        const pinXs = [457.13,472.48,487.83,503.18,518.53,533.88,549.23,564.58];
-        drawDigitsArray(pages[0], document.getElementById('resPin').value, pinXs, 415.09, 15.35, font);
-        drawCentered(pages[0], document.getElementById('offFlat').value, 180.78, 385.39, 15.35, font);
-        drawCentered(pages[0], document.getElementById('offRoad').value, 180.90, 371.39, 15.34, font);
-        drawCentered(pages[0], document.getElementById('offPo').value, 180.90, 358.39, 15.34, font);
-        drawCentered(pages[0], document.getElementById('offArea').value, 180.73, 344.89, 15.34, font);
-        drawCentered(pages[0], document.getElementById('offDistrict').value, 180.61, 331.39, 15.36, font);
-        drawFullText(pages[0], document.getElementById('offState').value, 135.07, 317.22, 82, font);
-        drawFullText(pages[0], document.getElementById('offCountry').value, 292.8, 317.22, 82, font);
-        drawDigitsArray(pages[0], document.getElementById('offPin').value, pinXs, 317.22, 15.35, font);
-        if(resStatusVal === 'Resident') drawTick(pages[0], 212.4, 301.39);
-        if(resStatusVal === 'Non-resident') drawTick(pages[0], 274.4, 301.39);
-        if(resStatusVal === 'Resident but not ordinarily resident') drawTick(pages[0], 352.4, 301.39);
-        drawCentered(pages[0], document.getElementById('passport').value, 328.82, 281.39, 14.82, font);
-        drawCentered(pages[0], document.getElementById('tin').value, 270.02, 261.19, 14.74, font);
-        const countryCode = document.getElementById('countryCode').value;
-        const mobileNum = document.getElementById('mobileNum').value;
-        drawDigitsArray(pages[0], countryCode, [240.31,255.66,271.01], 230.39, 14.74, font);
-        drawDigitsArray(pages[0], mobileNum, [377.17,391.91,406.65,421.39,436.13,450.87,465.61,480.35,495.09,509.83], 230.39, 14.74, font);
-        drawFullText(pages[0], document.getElementById('email').value, 242.31, 217.39, 257, font, 9);
-        const std = document.getElementById('stdCode').value;
-        const land = document.getElementById('landlineNum').value;
-        drawDigitsArray(pages[0], std, [240.01,255.36,270.5,285.8], 204.09, 14.74, font);
-        drawDigitsArray(pages[0], land, [376.75,392.05,407.35,422.65,437.95,453.25,468.6,483.9], 204.09, 14.74, font);
-
-        const incomesVAl = Array.from(document.querySelectorAll('input[name="income"]:checked')).map(el => el.value);
-        if(incomesVAl.includes('Salary')) drawTick(pages[0], 181.47, 164.02);
-        if(incomesVAl.includes('Business')) drawTick(pages[0], 258.8, 164.02);
-        if(incomesVAl.includes('House Property')) drawTick(pages[0], 397.47, 164.02);
-        if(incomesVAl.includes('Capital Gains')) drawTick(pages[0], 182.14, 148.2);
-        if(incomesVAl.includes('Other')) drawTick(pages[0], 258.8, 148.2);
-        if(incomesVAl.includes('No Income')) drawTick(pages[0], 398, 148.2);
-
-        const singleParentVal = document.getElementById('singleParent').value;
-        if(singleParentVal === 'Yes') drawTick(pages[0], 243.50, 109);
-        else drawTick(pages[0], 305.5, 109);
-
-        drawCentered(pages[0], document.getElementById('fatherFirst').value, 179.67, 94.5, 15.34, font);
-        drawCentered(pages[0], document.getElementById('fatherMiddle').value, 179.81, 80.5, 15.34, font);
-        drawCentered(pages[0], document.getElementById('fatherLast').value, 179.67, 67.5, 15.34, font);
-        drawCentered(pages[1], document.getElementById('motherFirst').value, 179.67, 811.56, 15.34, font);
-        drawCentered(pages[1], document.getElementById('motherMiddle').value, 179.81, 797.52, 15.34, font);
-        drawCentered(pages[1], document.getElementById('motherLast').value, 179.67, 784.50, 15.34, font);
-        if(document.getElementById('printParent').value === 'Father') drawTick(pages[1], 335.77, 768.20);
-        else drawTick(pages[1], 397.28, 768.20);
-        drawDigitsArray(pages[1], document.getElementById('aoArea').value, [237.13,252.47,268.81], 726.89, 14.74, font);
-        drawDigitsArray(pages[1], document.getElementById('aoType').value, [397.13,412.47], 726.89, 14.74, font);
-        drawDigitsArray(pages[1], document.getElementById('aoRange').value, [237.13,252.47,268.81], 712.89, 14.74, font);
-        drawDigitsArray(pages[1], document.getElementById('aoNumber').value, [397.13,412.47], 712.89, 14.74, font);
-        drawCentered(pages[1], document.getElementById('raFirst').value, 176.67, 669.56, 15.34, font);
-        drawCentered(pages[1], document.getElementById('raMiddle').value, 176.81, 655.86, 15.34, font);
-        drawCentered(pages[1], document.getElementById('raLast').value, 176.67, 642.72, 15.34, font);
-        drawCentered(pages[1], document.getElementById('raPan').value, 177.87, 626.89, 15.35, font);
-        drawDigitsArray(pages[1], document.getElementById('raAadhaar').value, [280.52,295.87,311.22,326.57,341.92,357.27,372.62,387.97,403.32,418.67,434.02,449.37], 611.09, 15.35, font);
-        drawCentered(pages[1], document.getElementById('raFlat').value, 178.59, 579.06, 15.35, font);
-        drawCentered(pages[1], document.getElementById('raRoad').value, 178.74, 565.80, 15.34, font);
-        drawCentered(pages[1], document.getElementById('raPost').value, 178.81, 552.26, 15.34, font);
-        drawCentered(pages[1], document.getElementById('raArea').value, 178.55, 538.76, 15.34, font);
-        drawCentered(pages[1], document.getElementById('raDistrict').value, 179.02, 525.69, 15.36, font);
-        drawFullText(pages[1], document.getElementById('raState').value, 130.07, 512, 82, font);
-        drawFullText(pages[1], document.getElementById('raCountry').value, 287.8, 512, 82, font);
-        drawDigitsArray(pages[1], document.getElementById('raPin').value, [454.13,469.48,484.83,500.18,515.53,530.88,546.23,561.58], 512, 15.35, font);
-        const racountryCode = document.getElementById('racountryCode').value;
-        const ramobileNum = document.getElementById('ramobileNum').value;
-        drawDigitsArray(pages[1], racountryCode, [238.01, 253.66, 269.01], 481, 14.74, font);
-        drawDigitsArray(pages[1], ramobileNum, [360.09, 374.25, 388.91, 403.65, 418.69, 434.53, 449.3, 464.01, 478.85, 493.59], 481, 14.74, font);
-        drawFullText(pages[1], document.getElementById('raEmail').value, 240.31, 467.09, 257, font, 9);
-        const rastdCode = document.getElementById('rastdCode').value;
-        const ralandlineNum = document.getElementById('ralandlineNum').value;
-        drawDigitsArray(pages[1], rastdCode, [238.01, 253.36, 268.5, 283.8], 453.29, 14.74, font);
-        drawDigitsArray(pages[1], ralandlineNum, [360.09, 374.25, 388.91, 403.65, 418.69, 434.53, 449.3, 464.01], 453.29, 14.74, font);
-        if(addCom === 'reAddress') drawTick(pages[1], 216.8, 417.70);
-        if(addCom === 'raAddress') drawTick(pages[1], 302.8, 417.70);
-        if(addCom === 'offAddress') drawTick(pages[1], 448.8, 417.70);
-        if(dobProof === 'dobPOI') drawTick(pages[1], 71.47, 360.70);
-        if(dobProof === 'dobPOA') drawTick(pages[1], 170.13, 360.70);
-        if(dobProof === 'dobPOB') drawTick(pages[1], 271.17, 360.70);
-        if(raProof === 'raPOI') drawTick(pages[1], 71.47, 323.70);
-        if(raProof === 'raPOA') drawTick(pages[1], 170.13, 323.70);
-
-        // ====== PART H ======
-        const declName = document.getElementById('declName').value.trim() ||
-                         [document.getElementById('firstName').value.trim(),
-                          document.getElementById('middleName').value.trim(),
-                          document.getElementById('lastName').value.trim()].filter(Boolean).join(' ');
-        const declCapacity = document.getElementById('declCapacity').value;
-        const declPlace = document.getElementById('declPlace').value.trim();
-        const declDate = document.getElementById('declDate').value.trim();
-        const signName = document.getElementById('signName').value.trim() || declName;
-        const signDesignation = document.getElementById('signDesignation').value.trim();
-
-        const drawPartHField = (key, text) => {
-            if (!text) return;
-            const pos = partHPositions[key];
-            if (!pos) return;
-            const pageIdx = Math.min(pos.page, pages.length - 1);
-            drawFullText(pages[pageIdx], text, pos.x, pos.y, pos.maxWidth, font, pos.size || 9);
-        };
-        drawPartHField('declName', declName);
-        drawPartHField('declCapacity', declCapacity);
-        drawPartHField('declPlace', declPlace);
-        drawPartHField('declDate', declDate);
-        drawPartHField('signName', signName);
-        drawPartHField('signDesignation', signDesignation);
-
-        const pdfBytes = await pdfDoc.save();
-        const blobUrl = URL.createObjectURL(new Blob([pdfBytes], {type:'application/pdf'}));
-        const previewDiv = document.getElementById('pdfPreviewContainer');
-        previewDiv.innerHTML = `<iframe class="pdf-iframe" src="${blobUrl}"></iframe>`;
-        if (dragModeActive) {
-            setTimeout(() => rebuildDragOverlay(), 400);
-        }
-        if(!onlyPreview) {
-            download(pdfBytes, fileName, "application/pdf");
-        }
-        return { pdfBytes, blobUrl };
-    }
-
-    // ============ DRAG MODE ============
-    function getPdfDimensions() {
-        if (!pdfDocCache) return null;
-        const page = pdfDocCache.getPages()[0];
-        const size = page.getSize();
-        return { width: size.width, height: size.height };
-    }
-
-    function rebuildDragOverlay() {
-        const container = document.getElementById('pdfPreviewContainer');
-        const old = container.querySelector('.drag-overlay');
-        if (old) old.remove();
-
-        if (!dragModeActive) return;
-        if (!pdfDocCache) return;
-
-        const iframe = container.querySelector('iframe');
-        if (!iframe) return;
-
-        const pdfDims = getPdfDimensions();
-        if (!pdfDims) return;
-
-        const viewWidth = container.clientWidth;
-        const viewHeight = container.clientHeight;
-
-        const scaleX = viewWidth / pdfDims.width;
-        const scaleY = scaleX;
-
-        const overlay = document.createElement('div');
-        overlay.className = 'drag-overlay active';
-        overlay.style.position = 'absolute';
-        overlay.style.top = 0;
-        overlay.style.left = 0;
-        overlay.style.width = viewWidth + 'px';
-        overlay.style.height = viewHeight + 'px';
-        overlay.style.pointerEvents = 'none';
-        overlay.style.zIndex = 50;
-
-        const toOverlayCoords = (pdfX, pdfY) => {
-            return {
-                left: pdfX * scaleX,
-                top: viewHeight - (pdfY * scaleY),
-            };
-        };
-
-        Object.keys(partHPositions).forEach(key => {
-            const pos = partHPositions[key];
-            const { left, top } = toOverlayCoords(pos.x, pos.y);
-            const el = document.createElement('div');
-            el.className = 'drag-item';
-            el.dataset.fieldKey = key;
-            el.style.left = left + 'px';
-            el.style.top = top + 'px';
-            el.style.pointerEvents = 'auto';
-            const tag = document.createElement('span');
-            tag.className = 'tag';
-            tag.textContent = partHLabels[key];
-            el.appendChild(tag);
-            const span = document.createElement('span');
-            span.textContent = '⬚ ' + partHLabels[key];
-            el.appendChild(span);
-            overlay.appendChild(el);
-
-            let isDragging = false;
-            let offsetX = 0, offsetY = 0;
-
-            el.addEventListener('mousedown', (ev) => {
-                ev.preventDefault();
-                isDragging = true;
-                el.classList.add('active-drag');
-                const elRect = el.getBoundingClientRect();
-                offsetX = ev.clientX - elRect.left;
-                offsetY = ev.clientY - elRect.top;
-                document.body.style.cursor = 'move';
-            });
-
-            document.addEventListener('mousemove', (ev) => {
-                if (!isDragging) return;
-                const overlayRect = overlay.getBoundingClientRect();
-                let newLeft = ev.clientX - overlayRect.left - offsetX;
-                let newTop = ev.clientY - overlayRect.top - offsetY;
-                newLeft = Math.max(0, Math.min(viewWidth - 20, newLeft));
-                newTop = Math.max(0, Math.min(viewHeight - 20, newTop));
-                el.style.left = newLeft + 'px';
-                el.style.top = newTop + 'px';
-            });
-
-            document.addEventListener('mouseup', () => {
-                if (!isDragging) return;
-                isDragging = false;
-                el.classList.remove('active-drag');
-                document.body.style.cursor = '';
-                const left = parseFloat(el.style.left) || 0;
-                const top = parseFloat(el.style.top) || 0;
-                const pdfX = left / scaleX;
-                const pdfY = (viewHeight - top) / scaleY;
-                partHPositions[key].x = Math.round(pdfX * 100) / 100;
-                partHPositions[key].y = Math.round(pdfY * 100) / 100;
-                console.log('Updated', key, '->', partHPositions[key]);
-            });
+    // Section status badges
+    const secA = document.getElementById('secAStatus');
+    if (secA) {
+        const aFilled = ['lastName','aadhaarNumber','dob','mobileNum','email'].every(id => {
+            const el = document.getElementById(id);
+            return el && el.value.trim();
         });
-
-        container.appendChild(overlay);
-        dragOverlayEl = overlay;
+        secA.className = 'sec-status ' + (aFilled ? 'ok' : 'pending');
+        secA.textContent = aFilled ? '✅ Complete' : '⚠️ Pending';
     }
 
-    document.getElementById('toggleDragBtn').addEventListener('click', () => {
-        if (!pdfDocCache) { alert('Please upload PDF template first.'); return; }
-        dragModeActive = !dragModeActive;
-        const btn = document.getElementById('toggleDragBtn');
-        const hint = document.getElementById('dragHint');
-        if (dragModeActive) {
-            btn.textContent = '🛑 Disable Drag';
-            hint.style.display = 'block';
-            rebuildDragOverlay();
+    // Tab badges
+    const tab2Badge = document.getElementById('tab2Badge');
+    if (tab2Badge) {
+        if (bridgeState.part1PdfBytes) {
+            tab2Badge.textContent = 'Ready';
+            tab2Badge.style.background = '#27ae60';
+            tab2Badge.style.color = '#fff';
         } else {
-            btn.textContent = '🎯 Enable Drag to Position';
-            hint.style.display = 'none';
-            const overlay = document.querySelector('.drag-overlay');
-            if (overlay) overlay.remove();
+            tab2Badge.textContent = 'Locked';
         }
-    });
+    }
+}
 
-    document.getElementById('refreshPreviewBtn').addEventListener('click', async () => {
-        if(!currentPdfBytes) { alert("Please upload Form 93 PDF first."); return; }
+document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', updateProgress);
+    el.addEventListener('change', updateProgress);
+});
+
+/* ============================================================
+   PART 1 — FORM 93 LOGIC
+   ============================================================ */
+let currentPdfBytes = null;
+let cachedFont = null;
+let pdfDocCache = null;
+let templateFileName = '';
+
+const partHPositions = {
+    declName:        { x: 95,  y: 280, page: 1, size: 9, maxWidth: 200 },
+    declCapacity:    { x: 265, y: 280, page: 1, size: 9, maxWidth: 90  },
+    declPlace:       { x: 75,  y: 215, page: 1, size: 9, maxWidth: 150 },
+    declDate:        { x: 75,  y: 200, page: 1, size: 9, maxWidth: 150 },
+    signName:        { x: 420, y: 75,  page: 1, size: 9, maxWidth: 150 },
+    signDesignation: { x: 420, y: 42,  page: 1, size: 9, maxWidth: 150 },
+};
+const partHLabels = {
+    declName: 'I, (Name)', declCapacity: 'Capacity', declPlace: 'Place',
+    declDate: 'Date', signName: 'Sign Name', signDesignation: 'Designation',
+};
+
+let dragModeActive = false;
+let dragOverlayEl = null;
+
+document.querySelectorAll('input[type="text"], input[type="email"]').forEach(inp => {
+    if(inp.type !== 'email') {
+        inp.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+    }
+});
+
+function autoFillPartH() {
+    const fn = document.getElementById('firstName').value.trim();
+    const mn = document.getElementById('middleName').value.trim();
+    const ln = document.getElementById('lastName').value.trim();
+    const fullName = [fn, mn, ln].filter(Boolean).join(' ');
+    const declNameField = document.getElementById('declName');
+    const signNameField = document.getElementById('signName');
+    const signDesignationField = document.getElementById('signDesignation');
+    if (!declNameField.dataset.manual) declNameField.value = fullName;
+    if (!signNameField.dataset.manual) signNameField.value = fullName;
+    if (!signDesignationField.dataset.manual && !signDesignationField.value) {
+        signDesignationField.value = 'SELF';
+    }
+    updateProgress();
+}
+['firstName','middleName','lastName'].forEach(id => {
+    document.getElementById(id).addEventListener('input', autoFillPartH);
+});
+document.getElementById('declName').addEventListener('input', function() { this.dataset.manual = 'true'; });
+document.getElementById('signName').addEventListener('input', function() { this.dataset.manual = 'true'; });
+document.getElementById('signDesignation').addEventListener('input', function() { this.dataset.manual = 'true'; });
+
+const fileUpload = document.getElementById('staticPdfUpload');
+const fileStatus = document.getElementById('fileStatus');
+
+fileUpload.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+        const bytes = await file.arrayBuffer();
+        currentPdfBytes = bytes;
+        templateFileName = file.name;
+        const tempDoc = await PDFLib.PDFDocument.load(bytes);
+        pdfDocCache = tempDoc;
+        const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf';
+        try {
+            const fontResp = await fetch(fontUrl);
+            const fontBuf = await fontResp.arrayBuffer();
+            cachedFont = await tempDoc.embedFont(fontBuf);
+        } catch(err) {
+            cachedFont = await tempDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        }
+        fileStatus.innerHTML = `✅ Loaded: <strong>${file.name}</strong> (${(file.size/1024).toFixed(1)} KB)`;
+        showToast('✅ PDF template लोड हो गया', 'success');
         await generateFilledPdfAndPreview(true, false);
-    });
-    document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
-        if(!currentPdfBytes) { alert("Upload PDF template first."); return; }
-        await generateFilledPdfAndPreview(false, true);
-    });
+        updateProgress();
+    } catch (err) {
+        console.error('PDF load error:', err);
+        fileStatus.textContent = '❌ Error loading PDF.';
+        showToast('❌ PDF load failed', 'error');
+    }
+});
 
-    function copySameAs(type) {
-        if (type === 'document') {
-            ['firstName','middleName','lastName'].forEach(f => {
-                var ucFirst = f => f.replace(/^./, m => m.toUpperCase());
-                document.getElementById('aadhaar'+ucFirst(f)).value = document.getElementById(f).value;
-            });
-        } else if (type === 'residence') {
-            ['Flat','Road','Po','Area','District','State','Country','Pin'].forEach(f => {
-                document.getElementById('off'+f).value = document.getElementById('res'+f).value;
-            });
+async function generateFilledPdfAndPreview(onlyPreview = false, needToValidate = true) {
+    if (!currentPdfBytes) {
+        alert("Please upload Form 93 PDF template first.");
+        return null;
+    }
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const aadhaar = document.getElementById('aadhaarNumber').value.replace(/\D/g,'');
+    const dob = document.getElementById('dob').value.trim();
+    const mobile = document.getElementById('mobileNum').value.trim();
+    const cCode = document.getElementById('countryCode').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const incomes = document.querySelectorAll('input[name="income"]:checked');
+    const fileName = `${firstName || 'Applicant'}_${lastName}_PAN_Form93.pdf`;
+
+    if(needToValidate){
+        if(!lastName) { alert("Last name required"); return null; }
+        if(aadhaar.length !== 12) { alert("Aadhaar must be 12 digits"); return null; }
+        if(!/^\d{8}$/.test(dob)) { alert("DOB must be 8 digits (DDMMYYYY)"); return null; }
+        if(mobile.length < 10) { alert("Valid mobile number required"); return null; }
+        if(cCode.length < 1) { alert("Valid country code required"); return null; }
+        if(!email.includes('@')) { alert("Valid email required"); return null; }
+        if(incomes.length === 0) { alert("Select at least one Source of Income"); return null; }
+    }
+
+    const pdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
+    pdfDoc.registerFontkit(fontkit);
+    let font = cachedFont;
+    if(!font) font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+    const pages = pdfDoc.getPages();
+
+    function drawCentered(page, text, startX, y, cellWidth, fontObj, fontSize=9) {
+        if(!text) return;
+        const str = text.toString().toUpperCase();
+        for(let i=0; i<str.length && i<50; i++) {
+            const ch = str[i];
+            const w = fontObj.widthOfTextAtSize(ch, fontSize);
+            const cx = startX + i*cellWidth + (cellWidth - w)/2;
+            page.drawText(ch, { x: cx, y: y, size: fontSize, font: fontObj });
+        }
+    }
+    function drawDigitsArray(page, digitsStr, xs, y, cellWidth, fontObj, fontSize=9) {
+        if(!digitsStr) return;
+        const arr = digitsStr.toString().split('');
+        for(let i=0; i<arr.length && i<xs.length; i++) {
+            const ch = arr[i];
+            const w = fontObj.widthOfTextAtSize(ch, fontSize);
+            const cx = xs[i] + (cellWidth - w)/2;
+            page.drawText(ch, { x: cx, y: y, size: fontSize, font: fontObj });
+        }
+    }
+    function drawTick(page, x, y) {
+        page.drawLine({ start: { x, y: y+3 }, end: { x: x+3, y }, thickness: 1.5, color: PDFLib.rgb(0,0,0) });
+        page.drawLine({ start: { x: x+3, y }, end: { x: x+9, y: y+7 }, thickness: 1.5, color: PDFLib.rgb(0,0,0) });
+    }
+    function drawFullText(page, text, startX, y, maxWidth, fontObj, maxFont=10, key="") {
+        if(!text) return;
+        const str = text.toUpperCase();
+        const fontSize = getFittingFontSize(str, fontObj, maxWidth, maxFont, 5, key);
+        drawTextSpaced({ page, text: str, x: startX, y, fontSize, font: fontObj, letterSpacing: 0 });
+    }
+    function getFittingFontSize(text, font, maxWidth, maxFontSize = 12, minFontSize = 4, key = "") {
+        if (key == "email") return 9;
+        let fontSize = maxFontSize;
+        while (fontSize >= minFontSize) {
+            const textWidth = font.widthOfTextAtSize(text, fontSize);
+            if (textWidth <= maxWidth) return fontSize - 0.2;
+            fontSize -= 0.2;
+        }
+        return minFontSize;
+    }
+    function drawTextSpaced({ page, text, x, y, font, fontSize = 12, letterSpacing = 5 }) {
+        let currentX = x;
+        for (let i = 0; i < text.length; i++) {
+            page.drawText(text[i], { x: currentX, y, size: fontSize, font });
+            const charWidth = font.widthOfTextAtSize(text[i], fontSize);
+            currentX += charWidth + letterSpacing;
         }
     }
 
-    function updateIncomeFields(event) {
-        if (!event || !event.target) return;
-        const clickedElement = event.target;
-        if (clickedElement.classList.contains('no-income-checkbox') && clickedElement.checked) {
-            document.querySelectorAll('input[name="income"].income-checkbox').forEach(cb => cb.checked = false);
-        } else if (clickedElement.classList.contains('income-checkbox') && clickedElement.checked) {
-            document.querySelectorAll('input[name="income"].no-income-checkbox').forEach(cb => cb.checked = false);
-        }
-    }
+    const genderVal = document.querySelector('input[name="gender"]:checked')?.value;
+    const isMale = genderVal === 'Male', isFemale = genderVal === 'Female', isTrans = genderVal === 'Transgender';
+    const resStatusVal = document.getElementById('resStatus').value;
+    const addCom = document.getElementById("addCom").value;
+    const dobProof = document.getElementById("dobProof").value;
+    const raProof = document.getElementById("raProof").value;
 
-    (function() {
-        function initCollapsibles() {
-            document.querySelectorAll('.form-section').forEach(section => {
-                const header = section.querySelector('.section-title.title-main');
-                if (!header) return;
-                if (!header.querySelector('.toggle-icon')) {
-                    const icon = document.createElement('span');
-                    icon.className = 'toggle-icon';
-                    icon.innerHTML = '&#9656;';
-                    icon.setAttribute('aria-hidden', 'true');
-                    header.appendChild(icon);
+    drawCentered(pages[0], document.getElementById('firstName').value, 180.61, 637.89, 15.35, font);
+    drawCentered(pages[0], document.getElementById('middleName').value, 180.73, 623.89, 15.35, font);
+    drawCentered(pages[0], document.getElementById('lastName').value, 180.73, 610.89, 15.35, font);
+    drawCentered(pages[0], document.getElementById('aadhaarFirstName').value, 180.56, 579.89, 15.34, font);
+    drawCentered(pages[0], document.getElementById('aadhaarMiddleName').value, 180.84, 565.89, 15.34, font);
+    drawCentered(pages[0], document.getElementById('aadhaarLastName').value, 180.61, 552.89, 15.35, font);
+    if(isMale) drawTick(pages[0], 183, 540);
+    if(isFemale) drawTick(pages[0], 229, 540);
+    if(isTrans) drawTick(pages[0], 291, 540);
+    const dobVal = document.getElementById('dob').value;
+    const dobXs = [180.78,195.69,226.63,242.90,272.72,287.63,302.53,317.44,332.34,347.25];
+    drawDigitsArray(pages[0], dobVal, dobXs, 526.39, 14.91, font);
+    const aadhaarXs = [180.78,195.69,211.60,227.01,242.42,257.33,272.74,287.65,302.56,316.47,332.38,347.29];
+    drawDigitsArray(pages[0], document.getElementById('aadhaarNumber').value, aadhaarXs, 513.19, 14.90, font);
+    drawCentered(pages[0], document.getElementById('resFlat').value, 180.59, 482.89, 15.34, font);
+    drawCentered(pages[0], document.getElementById('resRoad').value, 180.74, 469.39, 15.34, font);
+    drawCentered(pages[0], document.getElementById('resPo').value, 180.81, 455.39, 15.34, font);
+    drawCentered(pages[0], document.getElementById('resArea').value, 180.95, 442.39, 15.35, font);
+    drawCentered(pages[0], document.getElementById('resDistrict').value, 181.02, 429, 15.35, font);
+    drawFullText(pages[0], document.getElementById('resState').value, 135.07, 415.09, 82, font);
+    drawFullText(pages[0], document.getElementById('resCountry').value, 292.8, 415.09, 82, font);
+    const pinXs = [457.13,472.48,487.83,503.18,518.53,533.88,549.23,564.58];
+    drawDigitsArray(pages[0], document.getElementById('resPin').value, pinXs, 415.09, 15.35, font);
+    drawCentered(pages[0], document.getElementById('offFlat').value, 180.78, 385.39, 15.35, font);
+    drawCentered(pages[0], document.getElementById('offRoad').value, 180.90, 371.39, 15.34, font);
+    drawCentered(pages[0], document.getElementById('offPo').value, 180.90, 358.39, 15.34, font);
+    drawCentered(pages[0], document.getElementById('offArea').value, 180.73, 344.89, 15.34, font);
+    drawCentered(pages[0], document.getElementById('offDistrict').value, 180.61, 331.39, 15.36, font);
+    drawFullText(pages[0], document.getElementById('offState').value, 135.07, 317.22, 82, font);
+    drawFullText(pages[0], document.getElementById('offCountry').value, 292.8, 317.22, 82, font);
+    drawDigitsArray(pages[0], document.getElementById('offPin').value, pinXs, 317.22, 15.35, font);
+    if(resStatusVal === 'Resident') drawTick(pages[0], 212.4, 301.39);
+    if(resStatusVal === 'Non-resident') drawTick(pages[0], 274.4, 301.39);
+    if(resStatusVal === 'Resident but not ordinarily resident') drawTick(pages[0], 352.4, 301.39);
+    drawCentered(pages[0], document.getElementById('passport').value, 328.82, 281.39, 14.82, font);
+    drawCentered(pages[0], document.getElementById('tin').value, 270.02, 261.19, 14.74, font);
+    const countryCode = document.getElementById('countryCode').value;
+    const mobileNum = document.getElementById('mobileNum').value;
+    drawDigitsArray(pages[0], countryCode, [240.31,255.66,271.01], 230.39, 14.74, font);
+    drawDigitsArray(pages[0], mobileNum, [377.17,391.91,406.65,421.39,436.13,450.87,465.61,480.35,495.09,509.83], 230.39, 14.74, font);
+    drawFullText(pages[0], document.getElementById('email').value, 242.31, 217.39, 257, font, 9);
+    const std = document.getElementById('stdCode').value;
+    const land = document.getElementById('landlineNum').value;
+    drawDigitsArray(pages[0], std, [240.01,255.36,270.5,285.8], 204.09, 14.74, font);
+    drawDigitsArray(pages[0], land, [376.75,392.05,407.35,422.65,437.95,453.25,468.6,483.9], 204.09, 14.74, font);
+
+    const incomesVAl = Array.from(document.querySelectorAll('input[name="income"]:checked')).map(el => el.value);
+    if(incomesVAl.includes('Salary')) drawTick(pages[0], 181.47, 164.02);
+    if(incomesVAl.includes('Business')) drawTick(pages[0], 258.8, 164.02);
+    if(incomesVAl.includes('House Property')) drawTick(pages[0], 397.47, 164.02);
+    if(incomesVAl.includes('Capital Gains')) drawTick(pages[0], 182.14, 148.2);
+    if(incomesVAl.includes('Other')) drawTick(pages[0], 258.8, 148.2);
+    if(incomesVAl.includes('No Income')) drawTick(pages[0], 398, 148.2);
+
+    const singleParentVal = document.getElementById('singleParent').value;
+    if(singleParentVal === 'Yes') drawTick(pages[0], 243.50, 109);
+    else drawTick(pages[0], 305.5, 109);
+
+    drawCentered(pages[0], document.getElementById('fatherFirst').value, 179.67, 94.5, 15.34, font);
+    drawCentered(pages[0], document.getElementById('fatherMiddle').value, 179.81, 80.5, 15.34, font);
+    drawCentered(pages[0], document.getElementById('fatherLast').value, 179.67, 67.5, 15.34, font);
+    drawCentered(pages[1], document.getElementById('motherFirst').value, 179.67, 811.56, 15.34, font);
+    drawCentered(pages[1], document.getElementById('motherMiddle').value, 179.81, 797.52, 15.34, font);
+    drawCentered(pages[1], document.getElementById('motherLast').value, 179.67, 784.50, 15.34, font);
+    if(document.getElementById('printParent').value === 'Father') drawTick(pages[1], 335.77, 768.20);
+    else drawTick(pages[1], 397.28, 768.20);
+    drawDigitsArray(pages[1], document.getElementById('aoArea').value, [237.13,252.47,268.81], 726.89, 14.74, font);
+    drawDigitsArray(pages[1], document.getElementById('aoType').value, [397.13,412.47], 726.89, 14.74, font);
+    drawDigitsArray(pages[1], document.getElementById('aoRange').value, [237.13,252.47,268.81], 712.89, 14.74, font);
+    drawDigitsArray(pages[1], document.getElementById('aoNumber').value, [397.13,412.47], 712.89, 14.74, font);
+    drawCentered(pages[1], document.getElementById('raFirst').value, 176.67, 669.56, 15.34, font);
+    drawCentered(pages[1], document.getElementById('raMiddle').value, 176.81, 655.86, 15.34, font);
+    drawCentered(pages[1], document.getElementById('raLast').value, 176.67, 642.72, 15.34, font);
+    drawCentered(pages[1], document.getElementById('raPan').value, 177.87, 626.89, 15.35, font);
+    drawDigitsArray(pages[1], document.getElementById('raAadhaar').value, [280.52,295.87,311.22,326.57,341.92,357.27,372.62,387.97,403.32,418.67,434.02,449.37], 611.09, 15.35, font);
+    drawCentered(pages[1], document.getElementById('raFlat').value, 178.59, 579.06, 15.35, font);
+    drawCentered(pages[1], document.getElementById('raRoad').value, 178.74, 565.80, 15.34, font);
+    drawCentered(pages[1], document.getElementById('raPost').value, 178.81, 552.26, 15.34, font);
+    drawCentered(pages[1], document.getElementById('raArea').value, 178.55, 538.76, 15.34, font);
+    drawCentered(pages[1], document.getElementById('raDistrict').value, 179.02, 525.69, 15.36, font);
+    drawFullText(pages[1], document.getElementById('raState').value, 130.07, 512, 82, font);
+    drawFullText(pages[1], document.getElementById('raCountry').value, 287.8, 512, 82, font);
+    drawDigitsArray(pages[1], document.getElementById('raPin').value, [454.13,469.48,484.83,500.18,515.53,530.88,546.23,561.58], 512, 15.35, font);
+    const racountryCode = document.getElementById('racountryCode').value;
+    const ramobileNum = document.getElementById('ramobileNum').value;
+    drawDigitsArray(pages[1], racountryCode, [238.01, 253.66, 269.01], 481, 14.74, font);
+    drawDigitsArray(pages[1], ramobileNum, [360.09, 374.25, 388.91, 403.65, 418.69, 434.53, 449.3, 464.01, 478.85, 493.59], 481, 14.74, font);
+    drawFullText(pages[1], document.getElementById('raEmail').value, 240.31, 467.09, 257, font, 9);
+    const rastdCode = document.getElementById('rastdCode').value;
+    const ralandlineNum = document.getElementById('ralandlineNum').value;
+    drawDigitsArray(pages[1], rastdCode, [238.01, 253.36, 268.5, 283.8], 453.29, 14.74, font);
+    drawDigitsArray(pages[1], ralandlineNum, [360.09, 374.25, 388.91, 403.65, 418.69, 434.53, 449.3, 464.01], 453.29, 14.74, font);
+    if(addCom === 'reAddress') drawTick(pages[1], 216.8, 417.70);
+    if(addCom === 'raAddress') drawTick(pages[1], 302.8, 417.70);
+    if(addCom === 'offAddress') drawTick(pages[1], 448.8, 417.70);
+    if(dobProof === 'dobPOI') drawTick(pages[1], 71.47, 360.70);
+    if(dobProof === 'dobPOA') drawTick(pages[1], 170.13, 360.70);
+    if(dobProof === 'dobPOB') drawTick(pages[1], 271.17, 360.70);
+    if(raProof === 'raPOI') drawTick(pages[1], 71.47, 323.70);
+    if(raProof === 'raPOA') drawTick(pages[1], 170.13, 323.70);
+
+    const declName = document.getElementById('declName').value.trim() ||
+                     [document.getElementById('firstName').value.trim(),
+                      document.getElementById('middleName').value.trim(),
+                      document.getElementById('lastName').value.trim()].filter(Boolean).join(' ');
+    const declCapacity = document.getElementById('declCapacity').value;
+    const declPlace = document.getElementById('declPlace').value.trim();
+    const declDate = document.getElementById('declDate').value.trim();
+    const signName = document.getElementById('signName').value.trim() || declName;
+    const signDesignation = document.getElementById('signDesignation').value.trim();
+
+    const drawPartHField = (key, text) => {
+        if (!text) return;
+        const pos = partHPositions[key];
+        if (!pos) return;
+        const pageIdx = Math.min(pos.page, pages.length - 1);
+        drawFullText(pages[pageIdx], text, pos.x, pos.y, pos.maxWidth, font, pos.size || 9);
+    };
+    drawPartHField('declName', declName);
+    drawPartHField('declCapacity', declCapacity);
+    drawPartHField('declPlace', declPlace);
+    drawPartHField('declDate', declDate);
+    drawPartHField('signName', signName);
+    drawPartHField('signDesignation', signDesignation);
+
+    const pdfBytes = await pdfDoc.save();
+    const blobUrl = URL.createObjectURL(new Blob([pdfBytes], {type:'application/pdf'}));
+    const previewDiv = document.getElementById('pdfPreviewContainer');
+    previewDiv.innerHTML = `<iframe class="pdf-iframe" src="${blobUrl}"></iframe>`;
+    if (dragModeActive) setTimeout(() => rebuildDragOverlay(), 400);
+    if(!onlyPreview) {
+        download(pdfBytes, fileName, "application/pdf");
+    }
+    return { pdfBytes, blobUrl };
+}
+
+/* ============================================================
+   PART 1 — DRAG
+   ============================================================ */
+function getPdfDimensions() {
+    if (!pdfDocCache) return null;
+    const page = pdfDocCache.getPages()[0];
+    const size = page.getSize();
+    return { width: size.width, height: size.height };
+}
+
+function rebuildDragOverlay() {
+    const container = document.getElementById('pdfPreviewContainer');
+    const old = container.querySelector('.drag-overlay');
+    if (old) old.remove();
+    if (!dragModeActive || !pdfDocCache) return;
+    const iframe = container.querySelector('iframe');
+    if (!iframe) return;
+    const pdfDims = getPdfDimensions();
+    if (!pdfDims) return;
+    const viewWidth = container.clientWidth;
+    const viewHeight = container.clientHeight;
+    const scaleX = viewWidth / pdfDims.width;
+    const scaleY = scaleX;
+    const overlay = document.createElement('div');
+    overlay.className = 'drag-overlay active';
+    Object.assign(overlay.style, {
+        position: 'absolute', top: 0, left: 0,
+        width: viewWidth + 'px', height: viewHeight + 'px',
+        pointerEvents: 'none', zIndex: 50
+    });
+    const toOverlayCoords = (pdfX, pdfY) => ({
+        left: pdfX * scaleX,
+        top: viewHeight - (pdfY * scaleY)
+    });
+    Object.keys(partHPositions).forEach(key => {
+        const pos = partHPositions[key];
+        const { left, top } = toOverlayCoords(pos.x, pos.y);
+        const el = document.createElement('div');
+        el.className = 'drag-item';
+        el.dataset.fieldKey = key;
+        el.style.left = left + 'px';
+        el.style.top = top + 'px';
+        el.style.pointerEvents = 'auto';
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = partHLabels[key];
+        el.appendChild(tag);
+        const span = document.createElement('span');
+        span.textContent = '⬚ ' + partHLabels[key];
+        el.appendChild(span);
+        overlay.appendChild(el);
+        let isDragging = false;
+        let offsetX = 0, offsetY = 0;
+        el.addEventListener('mousedown', (ev) => {
+            ev.preventDefault();
+            isDragging = true;
+            el.classList.add('active-drag');
+            const elRect = el.getBoundingClientRect();
+            offsetX = ev.clientX - elRect.left;
+            offsetY = ev.clientY - elRect.top;
+            document.body.style.cursor = 'move';
+        });
+        document.addEventListener('mousemove', (ev) => {
+            if (!isDragging) return;
+            const overlayRect = overlay.getBoundingClientRect();
+            let newLeft = ev.clientX - overlayRect.left - offsetX;
+            let newTop = ev.clientY - overlayRect.top - offsetY;
+            newLeft = Math.max(0, Math.min(viewWidth - 20, newLeft));
+            newTop = Math.max(0, Math.min(viewHeight - 20, newTop));
+            el.style.left = newLeft + 'px';
+            el.style.top = newTop + 'px';
+        });
+        document.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            el.classList.remove('active-drag');
+            document.body.style.cursor = '';
+            const left = parseFloat(el.style.left) || 0;
+            const top = parseFloat(el.style.top) || 0;
+            const pdfX = left / scaleX;
+            const pdfY = (viewHeight - top) / scaleY;
+            partHPositions[key].x = Math.round(pdfX * 100) / 100;
+            partHPositions[key].y = Math.round(pdfY * 100) / 100;
+        });
+    });
+    container.appendChild(overlay);
+    dragOverlayEl = overlay;
+}
+
+document.getElementById('toggleDragBtn').addEventListener('click', () => {
+    if (!pdfDocCache) { alert('Please upload PDF template first.'); return; }
+    dragModeActive = !dragModeActive;
+    const btn = document.getElementById('toggleDragBtn');
+    const hint = document.getElementById('dragHint');
+    if (dragModeActive) {
+        btn.textContent = '🛑 Disable Drag';
+        hint.style.display = 'block';
+        rebuildDragOverlay();
+    } else {
+        btn.textContent = '🎯 Enable Drag';
+        hint.style.display = 'none';
+        const overlay = document.querySelector('.drag-overlay');
+        if (overlay) overlay.remove();
+    }
+});
+
+document.getElementById('refreshPreviewBtn').addEventListener('click', async () => {
+    if(!currentPdfBytes) { alert("Please upload Form 93 PDF first."); return; }
+    await generateFilledPdfAndPreview(true, false);
+});
+
+/* ============================================================
+   BRIDGE (Part 1 → Part 2)
+   ============================================================ */
+const bridgeState = { part1PdfBytes: null, part1PdfBlobUrl: null };
+
+document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
+    if(!currentPdfBytes) { alert("Upload PDF template first."); return; }
+    const result = await generateFilledPdfAndPreview(false, true);
+    if (result && result.pdfBytes) {
+        bridgeState.part1PdfBytes = result.pdfBytes;
+        bridgeState.part1PdfBlobUrl = result.blobUrl;
+        showToast('✅ PDF download हो गई! अब Part 2 में फोटो/सिग्नेचर जोड़ें।', 'success');
+        // Auto-switch to Part 2 after short delay
+        setTimeout(() => {
+            // Auto-inject PDF into Part 2
+            state.pdfBytes = bridgeState.part1PdfBytes;
+            state.pdfDocLib = null;
+            state.pdfJsDoc = null;
+            document.getElementById('pdfName').textContent = templateFileName || 'Form93_Filled.pdf';
+            const pdfInfoEl = document.getElementById('pdfInfo');
+            pdfInfoEl.classList.add('show');
+            pdfInfoEl.innerHTML = `📄 <b>${templateFileName || 'Form93_Filled.pdf'}</b><br>Size: ${formatBytes(bridgeState.part1PdfBytes.byteLength)}<br><i>(Part 1 से auto-loaded)</i>`;
+            document.getElementById('autoLoadedBadge').style.display = 'block';
+            switchTab(2);
+            updateProgress();
+        }, 800);
+    }
+});
+
+/* ============================================================
+   PART 2 — STATE
+   ============================================================ */
+const state = {
+    pdfDocLib: null, pdfBytes: null, pdfJsDoc: null,
+    photoBytes: null, signBytes: null,
+    photoFile: null, signFile: null,
+    currentPage: 1, totalPages: 1, scale: 1.4,
+    photo: { x: 484, y: 592, w: 100, h: 132, locked: false },
+    photoLeft: { x: 35 },
+    sign:  { x: 20,  y: 615, w: 110, h: 45, locked: false },
+    sign2: { x: 410, y: 125, w: 120, h: 45, locked: false },
+    extras: [], activeExtraId: null,
+    finalPdfBytes: null, finalBlobUrl: null, finalZoom: 1.0,
+};
+const STORAGE_KEY = 'pan_tool_settings_v1';
+let extraIdCounter = 1;
+const EXTRA_COLORS = ['#f59e0b','#10b981','#6366f1','#ef4444','#8b5cf6','#14b8a6','#f97316'];
+
+/* ============================================================
+   PART 2 — SETTINGS
+   ============================================================ */
+function getCurrentSettings() {
+    return {
+        version: 1, timestamp: Date.now(),
+        photo: { ...state.photo }, photoLeft: { ...state.photoLeft },
+        sign: { ...state.sign }, sign2: { ...state.sign2 },
+        options: {
+            photoLeft: document.getElementById('photoLeft')?.checked ?? true,
+            signPage2: document.getElementById('signPage2')?.checked ?? true,
+            signAutoProcess: document.getElementById('signAutoProcess')?.checked ?? true,
+            thumbBlueInk: document.getElementById('thumbBlueInk')?.checked ?? false,
+            blueShade: document.getElementById('blueShade')?.value ?? 'medium',
+        },
+    };
+}
+function saveSettings(showMsg = false) {
+    try {
+        const s = getCurrentSettings();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+        const badge = document.getElementById('autoSaveBadge');
+        if (badge) {
+            badge.style.display = 'inline-block';
+            badge.textContent = 'Auto-Saved ✓';
+            setTimeout(() => { badge.textContent = 'Auto-Saved'; }, 1500);
+        }
+        const statusEl = document.getElementById('settingsStatus');
+        if (statusEl) {
+            const t = new Date(s.timestamp).toLocaleString('hi-IN');
+            statusEl.innerHTML = `✅ Saved: ${t}`;
+        }
+        if (showMsg) showToast('💾 Settings save हो गईं', 'success');
+    } catch (err) { if (showMsg) showToast('❌ Save failed', 'error'); }
+}
+function loadSettings(showMsg = false) {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) { if (showMsg) showToast('📭 कोई saved settings नहीं मिलीं', 'info'); return false; }
+        const s = JSON.parse(raw);
+        if (!s || s.version !== 1) return false;
+        if (s.photo)  Object.assign(state.photo,  s.photo);
+        if (s.photoLeft) state.photoLeft.x = s.photoLeft.x;
+        if (s.sign)   Object.assign(state.sign,   s.sign);
+        if (s.sign2)  Object.assign(state.sign2,  s.sign2);
+        if (s.options) {
+            const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+            setChk('photoLeft', s.options.photoLeft);
+            setChk('signPage2', s.options.signPage2);
+            setChk('signAutoProcess', s.options.signAutoProcess);
+            setChk('thumbBlueInk', s.options.thumbBlueInk);
+            const shade = document.getElementById('blueShade');
+            if (shade && s.options.blueShade) shade.value = s.options.blueShade;
+            const note = document.getElementById('thumbBlueNote');
+            if (note) note.style.display = s.options.thumbBlueInk ? 'block' : 'none';
+        }
+        syncPhotoInputs();
+        syncSignInputs();
+        if (state.pdfJsDoc) buildOverlays();
+        if (showMsg) showToast('📂 Settings load हो गईं', 'success');
+        return true;
+    } catch (err) { if (showMsg) showToast('❌ Load failed', 'error'); return false; }
+}
+function clearSettings() {
+    if (!confirm('क्या आप saved settings delete करना चाहते हैं?')) return;
+    try {
+        localStorage.removeItem(STORAGE_KEY);
+        const statusEl = document.getElementById('settingsStatus');
+        if (statusEl) statusEl.innerHTML = '🗑️ Settings cleared';
+        document.getElementById('autoSaveBadge').style.display = 'none';
+        showToast('🗑️ Settings clear हो गईं', 'info');
+    } catch (err) { showToast('❌ Clear failed', 'error'); }
+}
+let autoSaveTimer = null;
+function autoSave() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => saveSettings(false), 600);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function showToast(msg, type = 'info', duration = 2000) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    clearTimeout(showToast._tid);
+    showToast._tid = setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function readFileAsArrayBuffer(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+function isPng(file) { return file.type === 'image/png' || /\.png$/i.test(file.name); }
+function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(2) + ' MB';
+}
+
+/* ============================================================
+   LOCK LOGIC
+   ============================================================ */
+function isLocked(kind) {
+    if (kind === 'photo' || kind === 'photo-left') return state.photo.locked;
+    if (kind === 'sign') return (state.currentPage === 2) ? state.sign2.locked : state.sign.locked;
+    return false;
+}
+function toggleLock(kind) {
+    if (kind === 'photo') {
+        state.photo.locked = !state.photo.locked;
+        showToast(state.photo.locked ? '🔒 फोटो लॉक हो गई' : '🔓 फोटो अनलॉक हो गई', 'info');
+    } else if (kind === 'sign') {
+        const newVal = !(state.sign.locked && state.sign2.locked);
+        state.sign.locked  = newVal;
+        state.sign2.locked = newVal;
+        showToast(newVal ? '🔒 सिग्नेचर लॉक हो गया' : '🔓 सिग्नेचर अनलॉक हो गया', 'info');
+    }
+    updateLockUI();
+    buildOverlays();
+}
+function lockAll() {
+    const allLocked = state.photo.locked && state.sign.locked && state.sign2.locked;
+    const newVal = !allLocked;
+    state.photo.locked = newVal;
+    state.sign.locked  = newVal;
+    state.sign2.locked = newVal;
+    showToast(newVal ? '🔒 सभी लॉक हो गए' : '🔓 सभी अनलॉक हो गए', 'info');
+    updateLockUI();
+    buildOverlays();
+}
+function updateLockUI() {
+    const photoLocked = state.photo.locked;
+    const photoBtn = document.getElementById('photoLockBtn');
+    if (photoBtn) {
+        photoBtn.classList.toggle('locked', photoLocked);
+        photoBtn.innerHTML = photoLocked ? '🔒 फोटो अनलॉक करें' : '🔓 फोटो लॉक करें';
+    }
+    const photoBar = document.getElementById('photoLockBar');
+    if (photoBar) {
+        photoBar.classList.toggle('locked', photoLocked);
+        photoBar.innerHTML = photoLocked
+            ? '🔒 <b>लॉक्ड</b> — फोटो अब मूव नहीं हो सकती।'
+            : '🔓 <b>अनलॉक</b> — फोटो को ड्रैग कर सकते हैं।';
+    }
+    const signLocked = state.sign.locked && state.sign2.locked;
+    const signBtn = document.getElementById('signLockBtn');
+    if (signBtn) {
+        signBtn.classList.toggle('locked', signLocked);
+        signBtn.innerHTML = signLocked ? '🔒 सिग्नेचर अनलॉक करें' : '🔓 सिग्नेचर लॉक करें';
+    }
+    const signBar = document.getElementById('signLockBar');
+    if (signBar) {
+        signBar.classList.toggle('locked', signLocked);
+        signBar.innerHTML = signLocked
+            ? '🔒 <b>लॉक्ड</b> — सिग्नेचर अब मूव नहीं हो सकता।'
+            : '🔓 <b>अनलॉक</b> — सिग्नेचर को ड्रैग कर सकते हैं।';
+    }
+    renderExtrasList();
+}
+
+/* ============================================================
+   PART 2 FILE INPUTS
+   ============================================================ */
+document.getElementById('pdfInput').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    document.getElementById('pdfName').textContent = f ? f.name : '';
+    if (f) {
+        state.pdfBytes = await readFileAsArrayBuffer(f);
+        state.pdfDocLib = null; state.pdfJsDoc = null;
+        document.getElementById('processBtn').disabled = true;
+        document.getElementById('finalPreviewBtn').disabled = true;
+        const info = document.getElementById('pdfInfo');
+        info.classList.add('show');
+        info.innerHTML = `📄 <b>${f.name}</b><br>Size: ${formatBytes(f.size)}<br><i>(Preview के लिए load करें)</i>`;
+        updateProgress();
+    }
+});
+document.getElementById('photoInput').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    document.getElementById('photoName').textContent = f ? f.name : '';
+    if (f) {
+        state.photoBytes = await readFileAsArrayBuffer(f);
+        state.photoFile = f;
+        const wrap = document.getElementById('photoThumbWrap');
+        const img = document.getElementById('photoThumb');
+        if (img.src) URL.revokeObjectURL(img.src);
+        img.src = URL.createObjectURL(f);
+        wrap.style.display = 'block';
+        if (state.pdfJsDoc) buildOverlays();
+        updateProgress();
+    }
+});
+document.getElementById('signInput').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    document.getElementById('signName').textContent = f ? f.name : '';
+    if (f) {
+        state.signBytes = await readFileAsArrayBuffer(f);
+        state.signFile = f;
+        await updateSignThumbnail();
+        if (state.pdfJsDoc) buildOverlays();
+        updateProgress();
+    }
+});
+async function updateSignThumbnail() {
+    if (!state.signFile) return;
+    const wrap = document.getElementById('signThumbWrap');
+    const img = document.getElementById('signThumb');
+    const label = document.getElementById('signThumbLabel');
+    const thumbBlue = document.getElementById('thumbBlueInk').checked;
+    const autoProcess = document.getElementById('signAutoProcess').checked;
+    try {
+        let bytes = null;
+        if (thumbBlue) { bytes = await processSignatureImage(state.signFile, true); label.textContent = '👍 Thumb (Blue)'; }
+        else if (autoProcess) { bytes = await processSignatureImage(state.signFile, false); label.textContent = '✍️ Signature (Black)'; }
+        else { bytes = state.signBytes; label.textContent = '📷 Original'; }
+        if (img.src) URL.revokeObjectURL(img.src);
+        img.src = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+        wrap.style.display = 'block';
+    } catch (err) { console.warn('Thumb preview failed', err); }
+}
+document.getElementById('extraInput').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) await addExtraDocument(file);
+    e.target.value = '';
+    renderExtrasList();
+    updateProgress();
+});
+
+/* ============================================================
+   EXTRA DOCS
+   ============================================================ */
+async function addExtraDocument(file) {
+    const bytes = await readFileAsArrayBuffer(file);
+    const type = /\.pdf$/i.test(file.name) ? 'pdf' : 'image';
+    let previewUrl = null;
+    if (type === 'image') previewUrl = URL.createObjectURL(new Blob([bytes]));
+    else {
+        try {
+            const doc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+            const page = await doc.getPage(1);
+            const vp = page.getViewport({ scale: 1 });
+            const cv = document.createElement('canvas');
+            cv.width = vp.width; cv.height = vp.height;
+            const c2 = cv.getContext('2d');
+            await page.render({ canvasContext: c2, viewport: vp }).promise;
+            previewUrl = cv.toDataURL('image/png');
+        } catch (err) {}
+    }
+    const id = 'x' + (extraIdCounter++);
+    const color = EXTRA_COLORS[(extraIdCounter - 2) % EXTRA_COLORS.length];
+    state.extras.push({ id, name: file.name, type, bytes, file, color, previewUrl });
+    showToast('📄 ' + file.name + ' जोड़ा गया', 'success');
+}
+function renderExtrasList() {
+    const list = document.getElementById('extrasList');
+    if (state.extras.length === 0) {
+        list.innerHTML = '<div style="padding:8px;color:#888;font-size:12px;">अभी कोई अतिरिक्त दस्तावेज़ नहीं जोड़ा गया।</div>';
+        return;
+    }
+    list.innerHTML = '';
+    const basePageCount = state.totalPages || 0;
+    state.extras.forEach((ex, idx) => {
+        const div = document.createElement('div');
+        div.className = 'extra-item' + (state.activeExtraId === ex.id ? ' active' : '');
+        div.dataset.id = ex.id;
+        const newPageNum = basePageCount + idx + 1;
+        const pageLabel = basePageCount > 0
+            ? `<span class="page-tag">→ पेज ${newPageNum}</span>`
+            : `<span class="page-tag">→ नया पेज ${idx + 1}</span>`;
+        div.innerHTML = `
+            <span class="dot" style="background:${ex.color}"></span>
+            <span class="name" title="${ex.name}">${ex.name}<br>${pageLabel}</span>
+            <button class="remove" title="हटाएँ">×</button>
+        `;
+        div.querySelector('.remove').addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            removeExtra(ex.id);
+        });
+        list.appendChild(div);
+    });
+}
+function removeExtra(id) {
+    const idx = state.extras.findIndex(e => e.id === id);
+    if (idx >= 0) {
+        if (state.extras[idx].previewUrl && state.extras[idx].previewUrl.startsWith('blob:')) {
+            try { URL.revokeObjectURL(state.extras[idx].previewUrl); } catch(e){}
+        }
+        state.extras.splice(idx, 1);
+        if (state.activeExtraId === id) state.activeExtraId = state.extras[0] ? state.extras[0].id : null;
+        renderExtrasList();
+        updateProgress();
+        showToast('🗑️ दस्तावेज़ हटाया गया', 'info');
+    }
+}
+
+/* ============================================================
+   SIGNATURE PROCESSING
+   ============================================================ */
+async function processSignatureImage(file, blueInk = false) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width; canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const d = imgData.data;
+            const BG_THRESHOLD = 210, SOFT_RANGE = 40;
+            let blueR = 0, blueG = 0, blueB = 180;
+            if (blueInk) {
+                const shade = document.getElementById('blueShade')?.value || 'medium';
+                if (shade === 'light') { blueR = 100; blueG = 150; blueB = 230; }
+                else if (shade === 'dark') { blueR = 0; blueG = 0; blueB = 139; }
+                else { blueR = 0; blueG = 0; blueB = 200; }
+            }
+            for (let i = 0; i < d.length; i += 4) {
+                const r = d[i], g = d[i+1], b = d[i+2], a = d[i+3];
+                if (a < 10) { d[i+3] = 0; continue; }
+                const lum = 0.299*r + 0.587*g + 0.114*b;
+                if (blueInk) {
+                    if (lum > BG_THRESHOLD) d[i+3] = 0;
+                    else if (lum > BG_THRESHOLD - SOFT_RANGE) {
+                        const t = (BG_THRESHOLD - lum) / SOFT_RANGE;
+                        d[i] = blueR; d[i+1] = blueG; d[i+2] = blueB;
+                        d[i+3] = Math.round(a * t);
+                    } else {
+                        d[i] = blueR; d[i+1] = blueG; d[i+2] = blueB;
+                        const strength = Math.min(1, (BG_THRESHOLD - lum) / 120);
+                        d[i+3] = Math.round(Math.min(255, a * (0.55 + 0.45 * strength)));
+                    }
+                } else {
+                    if (lum > BG_THRESHOLD) d[i+3] = 0;
+                    else if (lum > BG_THRESHOLD - SOFT_RANGE) {
+                        const t = (BG_THRESHOLD - lum) / SOFT_RANGE;
+                        d[i] = 0; d[i+1] = 0; d[i+2] = 0;
+                        d[i+3] = Math.round(a * t);
+                    } else {
+                        d[i] = 0; d[i+1] = 0; d[i+2] = 0;
+                        const strength = Math.min(1, (BG_THRESHOLD - lum) / 120);
+                        d[i+3] = Math.round(Math.min(255, a * (0.55 + 0.45 * strength)));
+                    }
                 }
-                header.setAttribute('role', 'button');
-                header.setAttribute('tabindex', '0');
-                header.setAttribute('aria-expanded', 'false');
-                section.classList.add('collapsed');
-                const toggle = () => {
-                    const isCollapsed = section.classList.toggle('collapsed');
-                    header.setAttribute('aria-expanded', (!isCollapsed).toString());
-                };
-                header.addEventListener('click', toggle);
-                header.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-                });
-            });
-        }
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCollapsibles);
-        else initCollapsibles();
-    })();
-
-    window.addEventListener('resize', () => {
-        if (dragModeActive) {
-            clearTimeout(window._resizeTimer);
-            window._resizeTimer = setTimeout(rebuildDragOverlay, 250);
-        }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            canvas.toBlob((blob) => {
+                URL.revokeObjectURL(url);
+                if (!blob) return reject(new Error("Image processing failed"));
+                blob.arrayBuffer().then(resolve).catch(reject);
+            }, 'image/png');
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Image load failed")); };
+        img.src = url;
     });
+}
+let processedSignBlobUrl = null;
+async function getSignaturePreviewUrl() {
+    if (!state.signFile) return null;
+    const thumbBlue = document.getElementById('thumbBlueInk').checked;
+    const autoProcess = document.getElementById('signAutoProcess').checked;
+    if (thumbBlue) {
+        try {
+            const bytes = await processSignatureImage(state.signFile, true);
+            if (processedSignBlobUrl) URL.revokeObjectURL(processedSignBlobUrl);
+            processedSignBlobUrl = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+            return processedSignBlobUrl;
+        } catch (e) { return URL.createObjectURL(new Blob([state.signBytes])); }
+    }
+    if (!autoProcess) return URL.createObjectURL(new Blob([state.signBytes]));
+    try {
+        const bytes = await processSignatureImage(state.signFile, false);
+        if (processedSignBlobUrl) URL.revokeObjectURL(processedSignBlobUrl);
+        processedSignBlobUrl = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+        return processedSignBlobUrl;
+    } catch (e) { return URL.createObjectURL(new Blob([state.signBytes])); }
+}
+
+/* ============================================================
+   LOAD PDF → RENDER
+   ============================================================ */
+async function loadAndPreview() {
+    const statusDiv = document.getElementById('statusMessage');
+    statusDiv.className = 'status';
+    statusDiv.textContent = '';
+    if (!state.pdfBytes) {
+        statusDiv.textContent = 'कृपया पहले PDF फाइल चुनें।';
+        return;
+    }
+    try {
+        statusDiv.className = 'status success';
+        statusDiv.textContent = 'PDF लोड हो रही है...';
+        state.pdfDocLib = await PDFLib.PDFDocument.load(state.pdfBytes);
+        state.pdfJsDoc = await pdfjsLib.getDocument({ data: state.pdfBytes.slice(0) }).promise;
+        state.totalPages = state.pdfJsDoc.numPages;
+        state.currentPage = 1;
+        const hasSaved = !!localStorage.getItem(STORAGE_KEY);
+        if (!hasSaved) {
+            const firstPage = await state.pdfJsDoc.getPage(1);
+            const vp = firstPage.getViewport({ scale: 1 });
+            const pageW = vp.width, pageH = vp.height;
+            const sX = pageW / 595, sY = pageH / 842;
+            state.photo.x = Math.round(484 * sX);
+            state.photo.y = Math.round(592 * sY);
+            state.photo.w = Math.round(100 * sX);
+            state.photo.h = Math.round(132 * sY);
+            state.photoLeft.x = Math.round(35 * sX);
+            state.sign.x = Math.round(20 * sX);
+            state.sign.y = Math.round(615 * sY);
+            state.sign.w = Math.round(110 * sX);
+            state.sign.h = Math.round(45 * sY);
+            state.sign2.x = Math.round(410 * sX);
+            state.sign2.y = Math.round(125 * sY);
+            state.sign2.w = Math.round(120 * sX);
+            state.sign2.h = Math.round(45 * sY);
+            syncPhotoInputs();
+            syncSignInputs();
+        }
+        document.getElementById('emptyPreview').style.display = 'none';
+        document.getElementById('pdfCanvas').style.display = 'block';
+        document.getElementById('controlsPanel').style.display = 'block';
+        document.getElementById('processBtn').disabled = false;
+        document.getElementById('finalPreviewBtn').disabled = false;
+        document.getElementById('prevBtn').disabled = false;
+        document.getElementById('nextBtn').disabled = false;
+        const info = document.getElementById('pdfInfo');
+        info.classList.add('show');
+        info.innerHTML = `✅ PDF Loaded<br>Pages: <b>${state.totalPages}</b><br>Size: ${formatBytes(state.pdfBytes.byteLength)}`;
+        await fitToWidth();
+        updateLockUI();
+        renderExtrasList();
+        statusDiv.textContent = '';
+        showToast('✅ PDF लोड हो गई — ' + state.totalPages + ' पेज', 'success');
+        updateProgress();
+    } catch (err) {
+        console.error(err);
+        statusDiv.className = 'status';
+        statusDiv.textContent = 'PDF लोड करने में त्रुटि: ' + err.message;
+    }
+}
+async function renderPage() {
+    const page = await state.pdfJsDoc.getPage(state.currentPage);
+    const viewport = page.getViewport({ scale: state.scale });
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width  = viewport.width  * dpr;
+    canvas.height = viewport.height * dpr;
+    canvas.style.width  = viewport.width  + 'px';
+    canvas.style.height = viewport.height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    document.getElementById('pageInfo').textContent = `पेज ${state.currentPage} / ${state.totalPages}`;
+    document.getElementById('zoomRange').value = state.scale;
+    await buildOverlays();
+    updateLockUI();
+}
+
+/* ============================================================
+   OVERLAYS (Part 2)
+   ============================================================ */
+let photoOverlay = null, photoOverlayLeft = null, signOverlay = null;
+function getCanvasOffsets() {
+    const stage  = document.getElementById('previewStage');
+    const canvas = document.getElementById('pdfCanvas');
+    const dpr = window.devicePixelRatio || 1;
+    const canvasRect = canvas.getBoundingClientRect();
+    const stageRect  = stage.getBoundingClientRect();
+    const offsetX = canvasRect.left - stageRect.left;
+    const offsetY = canvasRect.top  - stageRect.top;
+    const pdfW = canvas.width  / dpr / state.scale;
+    const pdfH = canvas.height / dpr / state.scale;
+    return { offsetX, offsetY, pdfW, pdfH };
+}
+function pdfRectToCss(rect, offsetX, offsetY, pdfH) {
+    return {
+        left: offsetX + rect.x * state.scale,
+        top:  offsetY + (pdfH - rect.y - rect.h) * state.scale,
+        width:  rect.w * state.scale,
+        height: rect.h * state.scale,
+    };
+}
+async function buildOverlays() {
+    [photoOverlay, photoOverlayLeft, signOverlay].forEach(el => {
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+    });
+    photoOverlay = photoOverlayLeft = signOverlay = null;
+    if (!state.pdfJsDoc) return;
+    const { offsetX, offsetY, pdfH } = getCanvasOffsets();
+    if (state.photoBytes && state.currentPage === 1) {
+        photoOverlay = await createOverlay('photo', state.photo, offsetX, offsetY, pdfH);
+        if (document.getElementById('photoLeft').checked) {
+            const leftRect = { x: state.photoLeft.x, y: state.photo.y, w: state.photo.w, h: state.photo.h };
+            photoOverlayLeft = await createOverlay('photo-left', leftRect, offsetX, offsetY, pdfH);
+        }
+    }
+    if (state.signBytes) {
+        if (state.currentPage === 1) {
+            signOverlay = await createOverlay('sign', state.sign, offsetX, offsetY, pdfH);
+        } else if (state.currentPage === 2 && document.getElementById('signPage2').checked) {
+            signOverlay = await createOverlay('sign', state.sign2, offsetX, offsetY, pdfH);
+        }
+    }
+}
+async function createOverlay(kind, rect, offsetX, offsetY, pdfH) {
+    const stage = document.getElementById('previewStage');
+    const div = document.createElement('div');
+    const isThumb = document.getElementById('thumbBlueInk').checked;
+    let cls = 'overlay-item';
+    if (kind === 'sign') cls += isThumb ? ' thumb' : ' sign';
+    div.className = cls;
+    div.dataset.kind = kind;
+    const locked = isLocked(kind);
+    if (locked) div.classList.add('locked');
+    const css = pdfRectToCss(rect, offsetX, offsetY, pdfH);
+    div.style.left   = css.left + 'px';
+    div.style.top    = css.top  + 'px';
+    div.style.width  = css.width + 'px';
+    div.style.height = css.height + 'px';
+    const img = document.createElement('img');
+    if (kind === 'sign') {
+        const url = await getSignaturePreviewUrl();
+        if (url) img.src = url;
+    } else {
+        img.src = URL.createObjectURL(new Blob([state.photoBytes]));
+    }
+    div.appendChild(img);
+    const handle = document.createElement('div');
+    handle.className = 'resize-handle';
+    div.appendChild(handle);
+    makeDraggable(div, handle, kind);
+    stage.appendChild(div);
+    return div;
+}
+function makeDraggable(el, handle, kind) {
+    let startX, startY, startLeft, startTop, startW, startH;
+    let mode = null;
+    const onDown = (e) => {
+        if (isLocked(kind)) { showToast('🔒 यह लॉक है — पहले अनलॉक करें', 'info'); e.preventDefault(); return; }
+        if (e.target === handle) return;
+        mode = 'move';
+        const p = getPoint(e);
+        startX = p.x; startY = p.y;
+        startLeft = parseFloat(el.style.left);
+        startTop  = parseFloat(el.style.top);
+        selectOverlay(kind);
+        e.preventDefault();
+    };
+    const onResizeDown = (e) => {
+        if (isLocked(kind)) { showToast('🔒 यह लॉक है — पहले अनलॉक करें', 'info'); e.preventDefault(); e.stopPropagation(); return; }
+        mode = 'resize';
+        const p = getPoint(e);
+        startX = p.x; startY = p.y;
+        startW = parseFloat(el.style.width);
+        startH = parseFloat(el.style.height);
+        selectOverlay(kind);
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    const onMove = (e) => {
+        if (!mode) return;
+        const p = getPoint(e);
+        const dx = p.x - startX;
+        const dy = p.y - startY;
+        if (mode === 'move') {
+            el.style.left = (startLeft + dx) + 'px';
+            el.style.top  = (startTop  + dy) + 'px';
+        } else {
+            el.style.width  = Math.max(20, startW + dx) + 'px';
+            el.style.height = Math.max(15, startH + dy) + 'px';
+        }
+        syncStateFromOverlay(kind, el);
+    };
+    const onUp = () => { if (mode) autoSave(); mode = null; };
+    el.addEventListener('mousedown', onDown);
+    el.addEventListener('touchstart', onDown, { passive: false });
+    handle.addEventListener('mousedown', onResizeDown);
+    handle.addEventListener('touchstart', onResizeDown, { passive: false });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
+}
+function getPoint(e) {
+    if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    return { x: e.clientX, y: e.clientY };
+}
+function syncStateFromOverlay(kind, el) {
+    const { offsetX, offsetY, pdfH: H } = getCanvasOffsets();
+    const left = parseFloat(el.style.left) - offsetX;
+    const top  = parseFloat(el.style.top)  - offsetY;
+    const w = parseFloat(el.style.width)  / state.scale;
+    const h = parseFloat(el.style.height) / state.scale;
+    const pdfX = left / state.scale;
+    const pdfY = H - (top / state.scale) - h;
+    if (kind === 'sign') {
+        const target = (state.currentPage === 2) ? state.sign2 : state.sign;
+        target.x = Math.round(pdfX);
+        target.y = Math.round(pdfY);
+        target.w = Math.round(w);
+        target.h = Math.round(h);
+        syncSignInputs();
+    } else if (kind === 'photo') {
+        state.photo.x = Math.round(pdfX);
+        state.photo.y = Math.round(pdfY);
+        state.photo.w = Math.round(w);
+        state.photo.h = Math.round(h);
+        syncPhotoInputs();
+        if (photoOverlayLeft && document.getElementById('photoLeft').checked) {
+            const lRect = { x: state.photoLeft.x, y: state.photo.y, w: state.photo.w, h: state.photo.h };
+            const css = pdfRectToCss(lRect, offsetX, offsetY, H);
+            photoOverlayLeft.style.left   = css.left + 'px';
+            photoOverlayLeft.style.top    = css.top  + 'px';
+            photoOverlayLeft.style.width  = css.width + 'px';
+            photoOverlayLeft.style.height = css.height + 'px';
+        }
+    } else if (kind === 'photo-left') {
+        state.photoLeft.x = Math.round(pdfX);
+        state.photo.y = Math.round(pdfY);
+        state.photo.w = Math.round(w);
+        state.photo.h = Math.round(h);
+        syncPhotoInputs();
+        if (photoOverlay) {
+            const rRect = { x: state.photo.x, y: state.photo.y, w: state.photo.w, h: state.photo.h };
+            const css = pdfRectToCss(rRect, offsetX, offsetY, H);
+            photoOverlay.style.left   = css.left + 'px';
+            photoOverlay.style.top    = css.top  + 'px';
+            photoOverlay.style.width  = css.width + 'px';
+            photoOverlay.style.height = css.height + 'px';
+        }
+    }
+}
+function selectOverlay(kind) {
+    [photoOverlay, photoOverlayLeft, signOverlay].forEach(o => o && o.classList.remove('selected'));
+    if (kind === 'photo' || kind === 'photo-left') {
+        if (photoOverlay)     photoOverlay.classList.add('selected');
+        if (photoOverlayLeft) photoOverlayLeft.classList.add('selected');
+    } else if (kind === 'sign') {
+        if (signOverlay) signOverlay.classList.add('selected');
+    }
+}
+
+/* ============================================================
+   SYNC INPUTS
+   ============================================================ */
+function syncPhotoInputs() {
+    document.getElementById('pX').value  = state.photo.x;
+    document.getElementById('pXn').value = state.photo.x;
+    document.getElementById('pY').value  = state.photo.y;
+    document.getElementById('pYn').value = state.photo.y;
+    document.getElementById('pW').value  = state.photo.w;
+    document.getElementById('pWn').value = state.photo.w;
+    document.getElementById('pH').value  = state.photo.h;
+    document.getElementById('pHn').value = state.photo.h;
+}
+function syncSignInputs() {
+    const s1 = state.sign, s2 = state.sign2;
+    document.getElementById('sX').value  = s1.x;
+    document.getElementById('sXn').value = s1.x;
+    document.getElementById('sY').value  = s1.y;
+    document.getElementById('sYn').value = s1.y;
+    document.getElementById('sW').value  = s1.w;
+    document.getElementById('sWn').value = s1.w;
+    document.getElementById('sH').value  = s1.h;
+    document.getElementById('sHn').value = s1.h;
+    document.getElementById('s2X').value  = s2.x;
+    document.getElementById('s2Xn').value = s2.x;
+    document.getElementById('s2Y').value  = s2.y;
+    document.getElementById('s2Yn').value = s2.y;
+    document.getElementById('s2W').value  = s2.w;
+    document.getElementById('s2Wn').value = s2.w;
+    document.getElementById('s2H').value  = s2.h;
+    document.getElementById('s2Hn').value = s2.h;
+}
+function copySignPosToPage2() {
+    state.sign2.x = state.sign.x;
+    state.sign2.y = state.sign.y;
+    state.sign2.w = state.sign.w;
+    state.sign2.h = state.sign.h;
+    syncSignInputs();
+    buildOverlays();
+    autoSave();
+    showToast('📋 Page 1 का position Page 2 पर copy हो गया', 'success');
+}
+const sliderPairs = [
+    ['pX','pXn','photo','x'], ['pY','pYn','photo','y'],
+    ['pW','pWn','photo','w'], ['pH','pHn','photo','h'],
+    ['sX','sXn','sign1','x'], ['sY','sYn','sign1','y'],
+    ['sW','sWn','sign1','w'], ['sH','sHn','sign1','h'],
+    ['s2X','s2Xn','sign2','x'], ['s2Y','s2Yn','sign2','y'],
+    ['s2W','s2Wn','sign2','w'], ['s2H','s2Hn','sign2','h'],
+];
+sliderPairs.forEach(([rangeId, numId, group, key]) => {
+    const r = document.getElementById(rangeId);
+    const n = document.getElementById(numId);
+    const onChange = (val) => {
+        val = parseFloat(val) || 0;
+        if (group === 'photo' && state.photo.locked) { showToast('🔒 फोटो लॉक है', 'info'); return; }
+        if (group === 'sign1' && state.sign.locked) { showToast('🔒 सिग्नेचर लॉक है', 'info'); return; }
+        if (group === 'sign2' && state.sign2.locked) { showToast('🔒 सिग्नेचर लॉक है', 'info'); return; }
+        if (group === 'photo') state.photo[key] = val;
+        else if (group === 'sign1') state.sign[key] = val;
+        else if (group === 'sign2') state.sign2[key] = val;
+        r.value = val; n.value = val;
+        buildOverlays();
+        autoSave();
+    };
+    r.addEventListener('input', () => onChange(r.value));
+    n.addEventListener('input', () => onChange(n.value));
+});
+document.getElementById('photoLeft').addEventListener('change', () => {
+    if (state.photo.locked) {
+        showToast('🔒 फोटो लॉक है', 'info');
+        document.getElementById('photoLeft').checked = !document.getElementById('photoLeft').checked;
+        return;
+    }
+    buildOverlays();
+    autoSave();
+});
+document.getElementById('signAutoProcess').addEventListener('change', async () => {
+    await updateSignThumbnail();
+    buildOverlays();
+    autoSave();
+});
+document.getElementById('thumbBlueInk').addEventListener('change', async (e) => {
+    const note = document.getElementById('thumbBlueNote');
+    if (e.target.checked) { note.style.display = 'block'; showToast('👍 अंगूठा नीली स्याही में बदलेगा', 'info'); }
+    else note.style.display = 'none';
+    await updateSignThumbnail();
+    buildOverlays();
+    autoSave();
+});
+document.getElementById('blueShade').addEventListener('change', async () => {
+    await updateSignThumbnail();
+    buildOverlays();
+    autoSave();
+    showToast('🎨 Blue shade update हो गया', 'success');
+});
+document.getElementById('signPage2').addEventListener('change', () => { buildOverlays(); autoSave(); });
+document.getElementById('zoomRange').addEventListener('input', async (e) => {
+    state.scale = parseFloat(e.target.value);
+    if (state.pdfJsDoc) await renderPage();
+});
+
+/* ============================================================
+   PAGE NAV
+   ============================================================ */
+async function prevPage() { if (state.currentPage > 1) { state.currentPage--; await renderPage(); } }
+async function nextPage() { if (state.currentPage < state.totalPages) { state.currentPage++; await renderPage(); } }
+async function fitToWidth() {
+    if (!state.pdfJsDoc) return;
+    const outer = document.getElementById('previewOuter');
+    const page = await state.pdfJsDoc.getPage(state.currentPage);
+    const baseVp = page.getViewport({ scale: 1 });
+    const targetWidth = outer.clientWidth - 40;
+    state.scale = targetWidth / baseVp.width;
+    document.getElementById('zoomRange').value = state.scale;
+    await renderPage();
+}
+
+/* ============================================================
+   TABS (Part 2)
+   ============================================================ */
+function selectTab(tab) {
+    document.getElementById('tabPhoto').classList.toggle('active', tab === 'photo');
+    document.getElementById('tabSign').classList.toggle('active', tab === 'sign');
+    document.getElementById('photoControls').style.display = tab === 'photo' ? 'block' : 'none';
+    document.getElementById('signControls').style.display  = tab === 'sign'  ? 'block' : 'none';
+    selectOverlay(tab);
+    if (tab === 'sign') syncSignInputs();
+    updateLockUI();
+}
+
+/* ============================================================
+   RESET
+   ============================================================ */
+function resetPosition() {
+    if (state.pdfJsDoc) {
+        state.pdfJsDoc.getPage(1).then(p => {
+            const vp = p.getViewport({ scale: 1 });
+            const sX = vp.width / 595, sY = vp.height / 842;
+            state.photo = { x: Math.round(484*sX), y: Math.round(592*sY), w: Math.round(100*sX), h: Math.round(132*sY), locked: state.photo.locked };
+            state.photoLeft = { x: Math.round(35*sX) };
+            state.sign  = { x: Math.round(20*sX),  y: Math.round(615*sY), w: Math.round(110*sX), h: Math.round(45*sY), locked: state.sign.locked };
+            state.sign2 = { x: Math.round(410*sX), y: Math.round(125*sY), w: Math.round(120*sX), h: Math.round(45*sY), locked: state.sign2.locked };
+            syncPhotoInputs(); syncSignInputs(); buildOverlays(); autoSave();
+            showToast('🔄 डिफ़ॉल्ट पोज़िशन पर रीसेट', 'success');
+        });
+    }
+}
+
+/* ============================================================
+   BUILD FINAL PDF
+   ============================================================ */
+async function buildFinalPDF() {
+    if (!state.pdfBytes) throw new Error('पहले PDF लोड करें।');
+    const pdfDoc = await PDFLib.PDFDocument.load(state.pdfBytes);
+    let signBytesFinal = state.signBytes;
+    const thumbBlue = document.getElementById('thumbBlueInk').checked;
+    const autoProcess = document.getElementById('signAutoProcess').checked;
+    if (state.signFile && (thumbBlue || autoProcess)) {
+        try { signBytesFinal = await processSignatureImage(state.signFile, thumbBlue); }
+        catch (err) { console.warn('Sign auto-process failed:', err); }
+    }
+    const pages = pdfDoc.getPages();
+    if (pages.length === 0) throw new Error("PDF में कोई पेज नहीं मिला।");
+    const embedPhoto = isPng(state.photoFile)
+        ? await pdfDoc.embedPng(state.photoBytes)
+        : await pdfDoc.embedJpg(state.photoBytes);
+    const embedSign = await pdfDoc.embedPng(signBytesFinal);
+    const page1 = pages[0];
+    page1.drawImage(embedPhoto, { x: state.photo.x, y: state.photo.y, width: state.photo.w, height: state.photo.h });
+    if (document.getElementById('photoLeft').checked) {
+        page1.drawImage(embedPhoto, { x: state.photoLeft.x, y: state.photo.y, width: state.photo.w, height: state.photo.h });
+    }
+    page1.drawImage(embedSign, { x: state.sign.x, y: state.sign.y, width: state.sign.w, height: state.sign.h });
+    if (pages.length > 1 && document.getElementById('signPage2').checked) {
+        const page2 = pages[1];
+        page2.drawImage(embedSign, { x: state.sign2.x, y: state.sign2.y, width: state.sign2.w, height: state.sign2.h });
+    }
+    const A4_W = 595, A4_H = 842, MARGIN = 30;
+    for (const ex of state.extras) {
+        const newPage = pdfDoc.addPage([A4_W, A4_H]);
+        let emb = null, imgW = 0, imgH = 0;
+        if (ex.type === 'image') {
+            emb = isPng(ex.file) ? await pdfDoc.embedPng(ex.bytes) : await pdfDoc.embedJpg(ex.bytes);
+            imgW = emb.width; imgH = emb.height;
+        } else {
+            try {
+                const doc = await pdfjsLib.getDocument({ data: ex.bytes.slice(0) }).promise;
+                const pg = await doc.getPage(1);
+                const vp = pg.getViewport({ scale: 2 });
+                const cv = document.createElement('canvas');
+                cv.width = vp.width; cv.height = vp.height;
+                const c2 = cv.getContext('2d');
+                await pg.render({ canvasContext: c2, viewport: vp }).promise;
+                const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+                const ab = await blob.arrayBuffer();
+                emb = await pdfDoc.embedPng(ab);
+                imgW = emb.width; imgH = emb.height;
+            } catch (e) { console.warn('Extra PDF embed failed:', e); }
+        }
+        if (!emb) continue;
+        const availW = A4_W - MARGIN * 2, availH = A4_H - MARGIN * 2;
+        const scl = Math.min(availW / imgW, availH / imgH);
+        const drawW = imgW * scl, drawH = imgH * scl;
+        const drawX = (A4_W - drawW) / 2, drawY = (A4_H - drawH) / 2;
+        newPage.drawImage(emb, { x: drawX, y: drawY, width: drawW, height: drawH });
+    }
+    return await pdfDoc.save();
+}
+
+/* ============================================================
+   FINAL PREVIEW MODAL
+   ============================================================ */
+async function openFinalPreview() {
+    if (!state.pdfBytes) { showToast('पहले PDF लोड करें', 'error'); return; }
+    const modal = document.getElementById('finalModal');
+    const stage = document.getElementById('finalPreviewStage');
+    modal.classList.add('show');
+    stage.innerHTML = `<div style="color:#666;padding:40px;font-size:14px;">
+        <div class="loading-spinner" style="border-color: rgba(0,0,0,0.1); border-top-color:#007bff;"></div>
+        <div style="margin-top:12px;">Final PDF बन रही है...</div>
+    </div>`;
+    try {
+        const bytes = await buildFinalPDF();
+        state.finalPdfBytes = bytes;
+        if (state.finalBlobUrl) URL.revokeObjectURL(state.finalBlobUrl);
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        state.finalBlobUrl = URL.createObjectURL(blob);
+        await renderFinalPreview();
+    } catch (err) {
+        console.error(err);
+        stage.innerHTML = `<div style="color:#d9534f;padding:40px;font-size:14px;">त्रुटि: ${err.message}</div>`;
+    }
+}
+async function renderFinalPreview() {
+    const stage = document.getElementById('finalPreviewStage');
+    stage.innerHTML = '';
+    if (!state.finalPdfBytes) return;
+    const pdfDoc = await pdfjsLib.getDocument({ data: state.finalPdfBytes.slice(0) }).promise;
+    const numPages = pdfDoc.numPages;
+    document.getElementById('finalPageCount').textContent = `कुल पेज: ${numPages}`;
+    for (let i = 1; i <= numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const baseVp = page.getViewport({ scale: 1 });
+        const stageWidth = stage.clientWidth - 40;
+        let scale = (stageWidth / baseVp.width) * state.finalZoom;
+        if (scale > 2.5) scale = 2.5;
+        const vp = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = vp.width * dpr; canvas.height = vp.height * dpr;
+        canvas.style.width  = vp.width  + 'px';
+        canvas.style.height = vp.height + 'px';
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'inline-block';
+        wrapper.style.margin = '0 auto 14px';
+        const label = document.createElement('div');
+        label.textContent = `पेज ${i}`;
+        label.style.fontSize = '12px';
+        label.style.color = '#333';
+        label.style.fontWeight = 'bold';
+        label.style.marginBottom = '4px';
+        wrapper.appendChild(label);
+        wrapper.appendChild(canvas);
+        stage.appendChild(wrapper);
+    }
+    updateFinalZoomInfo();
+}
+function updateFinalZoomInfo() { document.getElementById('finalZoomInfo').textContent = Math.round(state.finalZoom * 100) + '%'; }
+async function finalZoomIn() { state.finalZoom = Math.min(2.5, state.finalZoom + 0.2); updateFinalZoomInfo(); await renderFinalPreview(); }
+async function finalZoomOut() { state.finalZoom = Math.max(0.4, state.finalZoom - 0.2); updateFinalZoomInfo(); await renderFinalPreview(); }
+async function finalFitWidth() { state.finalZoom = 1.0; updateFinalZoomInfo(); await renderFinalPreview(); }
+function closeFinalPreview() { document.getElementById('finalModal').classList.remove('show'); }
+function downloadFinalPDF() {
+    if (!state.finalBlobUrl) { showToast('पहले Final Preview खोलें', 'error'); return; }
+    const link = document.createElement('a');
+    link.href = state.finalBlobUrl;
+    link.download = 'PAN_Form_Ready.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('📥 PDF डाउनलोड हो गई', 'success');
+}
+function printFinalPDF() {
+    if (!state.finalBlobUrl) { showToast('पहले Final Preview खोलें', 'error'); return; }
+    const w = window.open(state.finalBlobUrl, '_blank');
+    if (w) w.addEventListener('load', () => setTimeout(() => { try { w.print(); } catch(e){} }, 500));
+}
+
+/* ============================================================
+   DIRECT DOWNLOAD
+   ============================================================ */
+async function processPDF() {
+    const statusDiv = document.getElementById('statusMessage');
+    const downloadLink = document.getElementById('downloadLink');
+    const btn = document.getElementById('processBtn');
+    downloadLink.style.display = 'none';
+    downloadLink.textContent = '';
+    if (!state.pdfBytes) {
+        statusDiv.className = 'status';
+        statusDiv.textContent = 'पहले PDF लोड करें।';
+        return;
+    }
+    btn.disabled = true;
+    statusDiv.className = 'status success';
+    statusDiv.textContent = 'प्रोसेसिंग चल रही है...';
+    try {
+        const bytes = await buildFinalPDF();
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'PAN_Form_Ready.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        downloadLink.href = url;
+        downloadLink.download = 'PAN_Form_Ready.pdf';
+        downloadLink.textContent = '📥 यहाँ क्लिक करके भी डाउनलोड करें';
+        downloadLink.style.display = 'block';
+        statusDiv.className = 'status success';
+        statusDiv.textContent = 'सफलतापूर्वक तैयार! डाउनलोड हो गया है।';
+        showToast('🎉 PAN Form तैयार!', 'success');
+    } catch (err) {
+        console.error(err);
+        statusDiv.className = 'status';
+        statusDiv.textContent = 'त्रुटि: ' + (err.message || 'प्रोसेसिंग में समस्या हुई।');
+        showToast('❌ प्रोसेसिंग में त्रुटि', 'error');
+    } finally { btn.disabled = false; }
+}
+
+/* ============================================================
+   KEYBOARD SHORTCUTS (GLOBAL)
+   ============================================================ */
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeFinalPreview();
+    if (e.key === 'ArrowLeft' && state.pdfJsDoc && document.getElementById('tab2Pane').classList.contains('active')) prevPage();
+    if (e.key === 'ArrowRight' && state.pdfJsDoc && document.getElementById('tab2Pane').classList.contains('active')) nextPage();
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (state.finalBlobUrl) downloadFinalPDF();
+        else if (state.pdfBytes && document.getElementById('tab2Pane').classList.contains('active')) processPDF();
+    }
+});
+
+/* ============================================================
+   COPY FUNCTIONS (Part 1)
+   ============================================================ */
+function copySameAs(type) {
+    if (type === 'document') {
+        ['firstName','middleName','lastName'].forEach(f => {
+            var ucFirst = f => f.replace(/^./, m => m.toUpperCase());
+            document.getElementById('aadhaar'+ucFirst(f)).value = document.getElementById(f).value;
+        });
+        showToast('↩ Name copied to Aadhaar section', 'success');
+    } else if (type === 'residence') {
+        ['Flat','Road','Po','Area','District','State','Country','Pin'].forEach(f => {
+            document.getElementById('off'+f).value = document.getElementById('res'+f).value;
+        });
+        showToast('↩ Address copied to Office section', 'success');
+    }
+    updateProgress();
+}
+
+function updateIncomeFields(event) {
+    if (!event || !event.target) return;
+    const clickedElement = event.target;
+    if (clickedElement.classList.contains('no-income-checkbox') && clickedElement.checked) {
+        document.querySelectorAll('input[name="income"].income-checkbox').forEach(cb => cb.checked = false);
+    } else if (clickedElement.classList.contains('income-checkbox') && clickedElement.checked) {
+        document.querySelectorAll('input[name="income"].no-income-checkbox').forEach(cb => cb.checked = false);
+    }
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+    // Collapsible sections
+    document.querySelectorAll('.form-section').forEach(section => {
+        const header = section.querySelector('.section-title.title-main');
+        if (!header) return;
+        if (!header.querySelector('.toggle-icon')) {
+            const icon = document.createElement('span');
+            icon.className = 'toggle-icon';
+            icon.innerHTML = '&#9656;';
+            icon.setAttribute('aria-hidden', 'true');
+            header.appendChild(icon);
+        }
+        header.setAttribute('role', 'button');
+        header.setAttribute('tabindex', '0');
+        header.setAttribute('aria-expanded', 'false');
+        section.classList.add('collapsed');
+        const toggle = () => {
+            const isCollapsed = section.classList.toggle('collapsed');
+            header.setAttribute('aria-expanded', (!isCollapsed).toString());
+        };
+        header.addEventListener('click', toggle);
+        header.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+        });
+    });
+
+    // Load settings
+    const loaded = loadSettings(false);
+    if (loaded) {
+        const statusEl = document.getElementById('settingsStatus');
+        if (statusEl) statusEl.innerHTML = '✅ पिछली settings auto-load हो गईं';
+        document.getElementById('autoSaveBadge').style.display = 'inline-block';
+    }
+    updateProgress();
+});
+
+window.addEventListener('beforeunload', () => saveSettings(false));
+
+window.addEventListener('resize', () => {
+    if (dragModeActive) {
+        clearTimeout(window._resizeTimer);
+        window._resizeTimer = setTimeout(rebuildDragOverlay, 250);
+    }
+});
 </script>
 </body>
 </html>
