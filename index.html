@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Form 93 – PAN Application | Live PDF Preview & Smart Filler</title>
+    <!-- pdf-lib + fontkit + downloadjs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/@pdf-lib/fontkit/dist/fontkit.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 24px 20px;
+        }
+        .app-container {
+            max-width: 1500px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+        }
+        .form-panel {
+            flex: 1.2;
+            min-width: 380px;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            padding: 24px 28px;
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+        .preview-panel {
+            flex: 1;
+            min-width: 460px;
+            background: #f9fafc;
+            border-radius: 28px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .pdf-viewer {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #cfdee9;
+            overflow: auto;
+            height: 100vh;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+        }
+        iframe, .pdf-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+        h2 { font-size: 1.7rem; margin: 0 0 6px; color: #1a2c3e; }
+        .sub { color: #2c5a74; font-size: 0.85rem; margin-bottom: 22px; border-left: 4px solid #f4b942; padding-left: 14px; background: #fff6e8; border-radius: 12px; }
+        .form-section {
+            background: #ffffff;
+            border-radius: 20px;
+            margin-bottom: 28px;
+            border: 1px solid #e2edf2;
+            padding: 14px 18px 18px;
+        }
+        .section-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+            color: #0f4c5f;
+            border-left: 5px solid #f4b942;
+            padding-left: 12px;
+        }
+
+        /* Main section headings (parent titles) */
+        .section-title.title-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 1.25rem;
+            padding: 10px 14px;
+            margin: 0 0 14px 0;
+            border-radius: 12px;
+            background: linear-gradient(90deg, rgba(244,185,66,0.08), rgba(31,94,122,0.02));
+            border-left: 6px solid #f4b942;
+            cursor: pointer;
+        }
+
+        .section-title.title-main .toggle-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
+            text-align: center;
+            font-size: 12px;
+            color: #0f4c5f;
+            transition: transform 180ms ease;
+        }
+
+        /* Collapsed behavior: hide everything except the main title */
+        .form-section.collapsed > :not(.section-title.title-main) {
+            display: none;
+        }
+
+        .form-section.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; align-items: flex-start; }
+        .field-group { flex: 1; min-width: 150px; }
+        label { font-weight: 600; font-size: 0.8rem; color: #1f5e7a; display: block; margin-bottom: 6px; }
+        input, select {
+            width: 100%; padding: 10px 12px; border-radius: 14px; border: 1px solid #cbdde6;
+            font-size: 0.9rem; transition: 0.2s; background: white;
+        }
+        input:focus, select:focus { outline: none; border-color: #f4b942; box-shadow: 0 0 0 3px rgba(244,185,66,0.2); }
+        .radio-group, .check-group { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin-top: 5px; }
+        .radio-group label, .check-group label { display: inline-flex; align-items: center; gap: 6px; font-weight: normal; }
+        .copy-btn { background: #eef2fa; border: 1px solid #bdd3e0; padding: 8px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 600; cursor: pointer; margin-top: 6px; transition: 0.2s; }
+        .copy-btn:hover { background: #f4e3c6; border-color: #f4b942; }
+        .inline-hint { font-size: 0.7rem; color: #3d7e9a; margin-top: 4px; }
+        button.primary {
+            background: #1f5e7a; border: none; color: white; padding: 14px 20px;
+            border-radius: 50px; font-weight: bold; font-size: 1rem; cursor: pointer;
+            width: 100%; margin-top: 12px; transition: 0.2s;
+        }
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .preview-header h3 {
+            margin: 0;
+            flex-shrink: 0;
+        }
+        .preview-header button {
+            width: auto;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            margin-top: 0;
+            flex-shrink: 0;
+        }
+        #refreshPreviewBtn {
+            background: #0d7fb5 !important;
+        }
+        #refreshPreviewBtn:hover {
+            background: #0a5f8f !important;
+        }
+        #downloadPdfBtn {
+            background: #27ae60 !important;
+        }
+        #downloadPdfBtn:hover {
+            background: #1e8449 !important;
+        }
+        .error-msg { color: #c7362b; font-size: 0.7rem; margin-top: 4px; }
+        .rule-card {
+            background: #fef7e8; border-radius: 18px; padding: 10px 16px; margin-top: 14px;
+            font-size: 0.75rem; border-left: 4px solid #f4b942;
+        }
+        .flex-btns { display: flex; gap: 12px; }
+        .upload-area { display: none; margin-bottom: 18px; }
+        .file-label { background: #ffffff; border: 1px dashed #1f5e7a; border-radius: 40px; padding: 6px 16px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        @media (max-width: 880px) { .preview-panel { position: relative; top: 0; } }
+        .required { color: red; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- LEFT: Interactive Form -->
+    <div class="form-panel">
+        <h2>📄 Form 93 (PAN Application Individual Citizen of India)</h2>
+        <div class="sub">✔ Individual | Citizen of India | Real-time PDF preview & download</div>
+
+        <!-- Static PDF uploader (preset with your static file) -->
+        <div class="upload-area">
+            <label class="file-label" for="staticPdfUpload">📁 Load your Form 93 PDF template (static)</label>
+            <input type="file" id="staticPdfUpload" accept=".pdf" style="display:none" />
+        </div>
+
+        <form id="panForm">
+            <!-- PART A - Personal Information -->
+            <div class="form-section">
+                <div class="section-title title-main">PART A - Personal Information</div>
+                
+                <div class="section-title" style="margin-top:15px;">1. A. Name (as per documents)</div>
+                <div class="row">
+                    <div class="field-group"><label>First Name <span class="required">*</span></label><input type="text" id="firstName" maxlength="25"></div>
+                    <div class="field-group"><label>Middle Name</label><input type="text" id="middleName" maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>Last Name <span class="required">*</span></label><input type="text" id="lastName" maxlength="25"></div>
+                </div>
+                <div class="rule-card">📌 Full name without abbreviations. If Aadhaar has initials, fill full name & expand in 1(B). Example: Aadhaar: "J M RANIPA" → Full: "JIL MANISH BHAI RANIPA".</div>
+                
+                <div class="section-title" style="margin-top: 25px;">1. B. Name (as per Aadhaar) <span class="required">*</span> <button type="button" class="copy-btn" onclick="copySameAs('document')" id="copyNameToAadhar">↩ Same as above (1. A. Name)</button></div>
+                <div class="row">
+                    <div class="field-group"><label>Aadhaar First Name</label><input type="text" id="aadhaarFirstName"  maxlength="25"></div>
+                    <div class="field-group"><label>Aadhaar Middle Name</label><input type="text" id="aadhaarMiddleName"  maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>Aadhaar Last Name</label><input type="text" id="aadhaarLastName"  maxlength="25"></div>
+                </div>
+                
+                <div class="section-title" style="margin-top: 25px;">2. Gender (select one) <span class="required">*</span></div>
+                <div class="row">
+                    <div class="radio-group">
+                        <label><input type="radio" name="gender" value="Male" checked> Male</label>
+                        <label><input type="radio" name="gender" value="Female"> Female</label>
+                        <label><input type="radio" name="gender" value="Transgender"> Transgender</label>
+                    </div>
+                </div>
+                
+                <div class="section-title" style="margin-top: 25px;">3. Date of Birth (DDMMYYYY) <span class="required">*</span></div>
+                <div class="row">
+                    <div class="field-group"><input type="text" id="dob"  maxlength="8"></div>
+                </div>
+
+                <div class="section-title" style="margin-top: 25px;">4. Aadhaar Number (12 digits) <span class="required">*</span></div>
+                <div class="row">
+                    <div class="field-group"><input type="text" id="aadhaarNumber"  maxlength="12"></div>
+                </div>
+                
+                <div class="section-title" style="margin-top: 25px;">5. 🏠 Residence Address <span class="required">*</span></div>
+                <div class="row">
+                    <div class="field-group"><label>Flat/Door/Building</label><input type="text" id="resFlat"  maxlength="25"></div>
+                    <div class="field-group"><label>Road/Street/Block/Sector</label><input type="text" id="resRoad"  maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>Post Office</label><input type="text" id="resPo"  maxlength="25"></div>
+                    <div class="field-group"><label>Area/Locality/Town/City</label><input type="text" id="resArea"  maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>District</label><input type="text" id="resDistrict"  maxlength="25"></div>
+                    <div class="field-group"><label>State/UT</label><input type="text" id="resState" value="GUJARAT"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>Country/Region</label><input type="text" id="resCountry" value="INDIA"></div>
+                    <div class="field-group"><label>PIN/ZIP CODE</label><input type="text" id="resPin"  maxlength="7"></div>
+                </div>
+                
+                <div class="section-title" style="margin-top: 25px;">6. 🏢 Office Address <button type="button" class="copy-btn" onclick="copySameAs('residence')" id="copyAddressToOffice">↩ Same as above (5. Residence Address)</button></div>
+                <div class="row">
+                    <div class="field-group"><label>Flat/Door/Building</label><input type="text" id="offFlat"  maxlength="25"></div>
+                    <div class="field-group"><label>Road/Street/Block/Sector</label><input type="text" id="offRoad"  maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>Post Office</label><input type="text" id="offPo"  maxlength="25"></div>
+                    <div class="field-group"><label>Area/Locality/Town/City</label><input type="text" id="offArea"  maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>District</label><input type="text" id="offDistrict"  maxlength="25"></div>
+                    <div class="field-group"><label>State/UT</label><input type="text" id="offState" value="GUJARAT"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>Country/Region</label><input type="text" id="offCountry" value="INDIA"></div>
+                    <div class="field-group"><label>PIN/ZIP CODE</label><input type="text" id="offPin"  maxlength="7"></div>
+                </div>
+
+                <div class="section-title" style="margin-top: 25px;">7. Residential Status (select one as applicable) <span class="required">*</span></div>
+                <div class="row">
+                    <div class="field-group"><label>Residential Status</label>
+                        <select id="resStatus">
+                            <option value="Resident">Resident</option>
+                            <option value="Non-resident">Non-resident</option>
+                            <option value="Resident but not ordinarily resident">Resident but not ordinarily resident</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 25px;">8. Passport Number (mandatory for (i) Non Resident (ii) Resident but not ordinarily resident)</div>
+                <div class="row"><div class="field-group"><label>Passport Number (if NRI/RNOR)</label><input type="text" id="passport" maxlength="12"></div></div>
+
+                <div class="section-title" style="margin-top: 25px;">9. Taxpayer Identification Number (TIN) in the Country of Residence (if any)</div>
+                <div class="row"><div class="field-group"><label>TIN</label><input type="text" id="tin"  maxlength="20"></div></div>
+
+                <div class="section-title" style="margin-top: 15px;">10. 📞 Contact Details <span class="required">*</span></div>
+                <div class="row">
+                    <div class="field-group">
+                        <label>Country Code <span class="required">*</span></label>
+                        <input type="text" id="countryCode" maxlength="3">
+                    </div>
+                    <div class="field-group">
+                        <label>Mobile No. <span class="required">*</span></label><input type="text" id="mobileNum" maxlength="10">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" id="email">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field-group">
+                        <label>STD Code </label>
+                        <input type="text" id="stdCode" maxlength="4">
+                    </div>
+                    <div class="field-group">
+                        <label>Landline No. </label>
+                        <input type="text" id="landlineNum" maxlength="8">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Source of Income (checkbox) -->
+            <div class="form-section">
+                <div class="section-title title-main">PART B- Source of Income</div>
+                <div class="section-title" style="margin-top: 15px;">11. 💰 Source of Income (select one or more)</div>
+                <div class="check-group">
+                    <label><input type="checkbox" name="income" value="Salary" checked class="income-checkbox" onclick="updateIncomeFields(event)"> Salary</label>
+                    <label><input type="checkbox" name="income" value="Business" class="income-checkbox" onclick="updateIncomeFields(event)"> Business</label>
+                    <label><input type="checkbox" name="income" value="House Property" class="income-checkbox" onclick="updateIncomeFields(event)"> House Property</label>
+                    <label><input type="checkbox" name="income" value="Capital Gains" class="income-checkbox" onclick="updateIncomeFields(event)"> Capital Gains</label>
+                    <label><input type="checkbox" name="income" value="Other" class="income-checkbox" onclick="updateIncomeFields(event)"> Other Sources</label>
+                    <label><input type="checkbox" name="income" value="No Income" class="no-income-checkbox" onclick="updateIncomeFields(event)"> No Income</label>
+                </div>
+            </div>
+
+            <!-- Parents -->
+            <div class="form-section">
+                <div class="section-title title-main">PART C - Details of Parents</div>
+                <div class="section-title" style="margin-top:15px;">12. Whether mother/father is a single parent? (select one)</div>
+                <div class="row"><div class="field-group"><label>Single parent?</label><select id="singleParent"><option value="No">No</option><option value="Yes">Yes (single guardian)</option></select></div></div>
+
+                <div class="section-title" style="margin-top: 25px;">13. Father's Details</div>
+                <div class="row">
+                    <div class="field-group"><label>Father's First Name <span class="required">*</span></label><input type="text" id="fatherFirst"  maxlength="25"></div>
+                    <div class="field-group"><label>Middle Name</label><input type="text" id="fatherMiddle" maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>Last Name</label><input type="text" id="fatherLast"  maxlength="25"></div>
+                </div>
+                
+                <div class="section-title" style="margin-top: 25px;">14. Mother's Details</div>
+                <div class="row">
+                    <div class="field-group"><label>Mother's First Name <span class="required">*</span></label><input type="text" id="motherFirst"  maxlength="25"></div>
+                    <div class="field-group"><label>Middle Name</label><input type="text" id="motherMiddle" maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>Last Name</label><input type="text" id="motherLast"  maxlength="25"></div>
+                </div>
+
+                <div class="section-title" style="margin-top: 25px;">15. Name of parent to be printed on Permanent Account Number card (select one)</div>
+                <div class="row"><div class="field-group"><label>Print parent on PAN card</label><select id="printParent"><option value="Father">Father</option><option value="Mother">Mother</option></select></div></div>
+            </div>
+
+            <!-- AO + Representative -->
+            <div class="form-section">
+                <div class="section-title title-main">PART D - Assessing Officer (AO Code)</div>
+                <div class="section-title" style="margin-top: 15px;">16. Assessing Officer (AO Code)</div>
+                <div class="row"><div class="field-group"><label>Area Code</label><input type="text" id="aoArea"  maxlength="3"></div>
+                <div class="field-group"><label>AO Type</label><input type="text" id="aoType"  maxlength="2"></div>
+                <div class="field-group"><label>Range Code</label><input type="text" id="aoRange"  maxlength="3"></div>
+                <div class="field-group"><label>AO Number</label><input type="text" id="aoNumber"  maxlength="2"></div></div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title title-main">PART E - Representative Assessee, if applicable (if minor/mentally ill/unsound mind)</div>
+                <div class="section-title" style="margin-top:15px;">17. Representative Assessee Details</div>
+                <div class="row">
+                    <div class="field-group"><label>RA First Name</label><input type="text" id="raFirst" maxlength="25"></div>
+                    <div class="field-group"><label>RA Middle Name</label><input type="text" id="raMiddle" maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>RA Last Name</label><input type="text" id="raLast" maxlength="25"></div>
+                </div>
+                <div class="section-title" style="margin-top:15px;">18. Permanent Account Number (if any)</div>
+                <div class="row">
+                    <div class="field-group"><label>RA PAN</label><input type="text" id="raPan" maxlength="10"></div>
+                </div>
+                <div class="section-title" style="margin-top:15px;">19. Aadhaar Number (if Permanent Account Number is not available)</div>
+                <div class="row">
+                    <div class="field-group"><label>RA Aadhaar</label><input type="text" id="raAadhaar" maxlength="12"></div>
+                </div>
+                <div class="section-title" style="margin-top:15px;">20. Representative Assessee Address</div>
+                <div class="row">
+                    <div class="field-group"><label>RA Flat/Door/Building</label><input type="text" id="raFlat" maxlength="25"></div>
+                    <div class="field-group"><label>RA Road/Street/Block/Sector</label><input type="text" id="raRoad" maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>RA Post Office</label><input type="text" id="raPost" maxlength="25"></div>
+                    <div class="field-group"><label>RA Area/Locality/Town/City</label><input type="text" id="raArea" maxlength="25"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>RA District</label><input type="text" id="raDistrict" maxlength="25"></div>
+                    <div class="field-group"><label>RA State/UT</label><input type="text" id="raState" value="GUJARAT"></div>
+                </div>
+                <div class="row">
+                    <div class="field-group"><label>RA Country/Region</label><input type="text" id="raCountry" value="INDIA"></div>
+                    <div class="field-group"><label>RA PIN/ZIP CODE</label><input type="text" id="raPin"  maxlength="7"></div>
+                </div>
+                
+                <div class="section-title" style="margin-top: 15px;">21. 📞 Representative Assessee Contact Details </div>
+                <div class="row">
+                    <div class="field-group">
+                        <label>Country Code <span class="required">*</span></label>
+                        <input type="text" id="racountryCode" maxlength="3">
+                    </div>
+                    <div class="field-group">
+                        <label>Mobile No. <span class="required">*</span></label><input type="text" id="ramobileNum" maxlength="10">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" id="raEmail">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field-group">
+                        <label>STD Code </label>
+                        <input type="text" id="rastdCode" maxlength="4">
+                    </div>
+                    <div class="field-group">
+                        <label>Landline No. </label>
+                        <input type="text" id="ralandlineNum" maxlength="8">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title title-main">Part F: Communication Address</div>
+
+                <div class="section-title" style="margin-top:15px;">22. Address for Communication (select one)</div>
+                <div class="row">
+                    <div class="field-group"><label>Address for Communication</label>
+                        <select id="addCom">
+                            <option value="reAddress">Residence Address</option>
+                            <option value="raAddress">Representative Assessee Address</option>
+                            <option value="offAddress">Office Address</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title title-main">Part G: Declaration by Applicant or by Representative Assessee on behalf of the Applicant</div>
+
+                <div class="section-title" style="margin-top:15px;">23. Documents submitted as Proof of Identity, Proof of Address and Proof of Date of Birth of the Applicant</div>
+                <div class="row">
+                    <div class="field-group"><label>Proof of Address and Proof of Date of Birth of the Applicant</label>
+                        <select id="dobProof">
+                            <option value="dobPOI">Proof of Identity</option>
+                            <option value="dobPOA">Proof of Address</option>
+                            <option value="dobPOB">Proof of Date of Birth</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top:15px;">24. Documents submitted as Proof of Identity, Proof of Address of Representative Assessee</div>
+                <div class="row">
+                    <div class="field-group"><label>Proof of Address and Proof of Date of Birth of the Applicant</label>
+                        <select id="raProof">
+                            <option value="raPOI">Proof of Identity</option>
+                            <option value="raPOA">Proof of Address</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- RIGHT: Real-time PDF preview panel with static template loaded -->
+    <div class="preview-panel">
+        <div class="preview-header">
+            <h3 style="margin:0;">📄 Live PDF Preview</h3>
+            <button type="button" id="refreshPreviewBtn" class="primary">🔄 Refresh</button>
+            <button type="button" id="downloadPdfBtn" class="primary">⬇️ Download Filled PDF (Form 93)</button>
+        </div>
+        <div class="pdf-viewer" id="pdfPreviewContainer">
+            <div style="padding: 40px; text-align:center; color:#68869e;">
+                ⬆️ Upload your official Form 93 PDF (first two pages).<br/>
+                After upload, realtime preview shows filled data.<br/>
+                Click "Refresh Live PDF Preview" after editing fields.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- Global state ----------
+    let currentPdfBytes = null;           // store uploaded template bytes
+    let cachedFont = null;
+    let pdfDocCache = null;
+    let fontkitInstance = null;
+
+    // Helper uppercase for text inputs (exclude email)
+    document.querySelectorAll('input[type="text"], input[type="email"]').forEach(inp => {
+        if(inp.type !== 'email') {
+            inp.addEventListener('input', function(e) { this.value = this.value.toUpperCase(); });
+        }
+    });
+
+    // Load static PDF from user upload (your given template)
+    const fileUpload = document.getElementById('staticPdfUpload');
+    const fileLabel = document.querySelector('.file-label');
+    fileLabel.addEventListener('click', () => fileUpload.click());
+    fileUpload.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const bytes = await file.arrayBuffer();
+        currentPdfBytes = bytes;
+        // load and cache pdf doc for subsequent fills
+        const tempDoc = await PDFLib.PDFDocument.load(bytes);
+        pdfDocCache = tempDoc;
+        // embed font globally
+        const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf';
+        try {
+            const fontResp = await fetch(fontUrl);
+            const fontBuf = await fontResp.arrayBuffer();
+            const customFont = await tempDoc.embedFont(fontBuf);
+            cachedFont = customFont;
+        } catch(err) { 
+            cachedFont = await tempDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        }
+        // refresh preview with current form data
+        await generateFilledPdfAndPreview(true, false);
+    });
+
+    window.addEventListener('load', async () => {
+
+        const input = document.getElementById('staticPdfUpload');
+        const button = document.getElementById('staticPdfUpload');
+
+        if (!input || !button) {
+            console.error('Input or button not found');
+            return;
+        }
+
+        try {
+
+            // NOTE:
+            // Browser userscripts CANNOT directly access local file paths
+            // like C:\Users\Admin\Downloads for security reasons.
+            // You must manually pick the file once OR serve it locally.
+
+            // Fetch file from local server instead
+            const response = await fetch('http://localhost:8000/storage/PAN-Forms-93.pdf');
+            const blob = await response.blob();
+
+            const file = new File(
+                [blob],
+                'PAN-Forms-93',
+                { type: 'application/pdf' }
+            );
+
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+
+            input.files = dataTransfer.files;
+
+            // trigger change event
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+
+            // click generate button
+            setTimeout(() => {
+                button.click();
+            }, 500);
+
+        } catch (err) {
+            console.error('Error uploading file:', err);
+        }
+
+    });
+
+    // Core function: fill pdf using exact mapping coordinates (as per original Form 93 layout)
+    async function generateFilledPdfAndPreview(onlyPreview = false, needToValidate = true) {
+        if (!currentPdfBytes) {
+            alert("Please upload Form 93 PDF template first (static file).");
+            return null;
+        }
+        // validate required fields
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const aadhaar = document.getElementById('aadhaarNumber').value.replace(/\D/g,'');
+        const dob = document.getElementById('dob').value.trim();
+        const mobile = document.getElementById('mobileNum').value.trim();
+        const cCode = document.getElementById('countryCode').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const incomes = document.querySelectorAll('input[name="income"]:checked');
+        const fileName = `${firstName}_${lastName}_PAN_Form93.pdf`;
+
+        if(needToValidate){
+            if(!firstName || !lastName) { alert("First name & Last name required"); return null; }
+            if(aadhaar.length !== 12) { alert("Aadhaar must be 12 digits"); return null; }
+            if(!/^\d{8}$/.test(dob)) { alert("DOB must be 8 digits (DDMMYYYY)"); return null; }
+            if(mobile.length < 10) { alert("Valid mobile number required"); return null; }
+            if(cCode.length < 1) { alert("Valid country code required"); return null; }
+            if(!email.includes('@')) { alert("Valid email required"); return null; }
+            if(incomes.length === 0) { alert("Select at least one Source of Income"); return null; }
+        }
+
+        // load from cached bytes
+        const pdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
+        pdfDoc.registerFontkit(fontkit);
+        let font = cachedFont;
+        if(!font) {
+            const stdFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+            font = stdFont;
+        }
+        const pages = pdfDoc.getPages();
+
+        // Helper draw functions (matches coordinate mapping from original code)
+        function drawCentered(page, text, startX, y, cellWidth, fontObj, fontSize=9) {
+            if(!text) return;
+            const str = text.toString().toUpperCase();
+            for(let i=0; i<str.length && i<50; i++) {
+                const ch = str[i];
+                const w = fontObj.widthOfTextAtSize(ch, fontSize);
+                const cx = startX + i*cellWidth + (cellWidth - w)/2;
+                page.drawText(ch, { x: cx, y: y, size: fontSize, font: fontObj });
+            }
+        }
+        function drawDigitsArray(page, digitsStr, xs, y, cellWidth, fontObj, fontSize=9) {
+            if(!digitsStr) return;
+            const arr = digitsStr.toString().split('');
+            for(let i=0; i<arr.length && i<xs.length; i++) {
+                const ch = arr[i];
+                const w = fontObj.widthOfTextAtSize(ch, fontSize);
+                const cx = xs[i] + (cellWidth - w)/2;
+                page.drawText(ch, { x: cx, y: y, size: fontSize, font: fontObj });
+            }
+        }
+        function drawTick(page, x, y) {
+            page.drawLine({ start: { x, y: y+3 }, end: { x: x+3, y }, thickness: 1.5, color: PDFLib.rgb(0,0,0) });
+            page.drawLine({ start: { x: x+3, y }, end: { x: x+9, y: y+7 }, thickness: 1.5, color: PDFLib.rgb(0,0,0) });
+        }
+        /*function drawFullText(page, text, startX, y, maxWidth, fontObj, maxFont=10) {
+            if(!text) return;
+            let fontSize = maxFont;
+            let txt = text.toUpperCase();
+            let width = fontObj.widthOfTextAtSize(txt, fontSize);
+            while(width > maxWidth && fontSize > 6) { fontSize -= 0.5; width = fontObj.widthOfTextAtSize(txt, fontSize); }
+            page.drawText(txt, { x: startX, y: y, size: fontSize, font: fontObj });
+        }*/
+        function drawFullText(page, text, startX, y, maxWidth, fontObj, maxFont=10, key="") {
+            if(!text) return;
+            const str = text.toUpperCase();
+            const fontSize = getFittingFontSize(str, fontObj, maxWidth, 10, 5, key);
+            
+            drawTextSpaced({
+                page,
+                text: str,
+                x: startX,
+                y,
+                fontSize,
+                font: fontObj,
+                letterSpacing: 0,
+            });
+        }
+
+        function getFittingFontSize(text, font, maxWidth, maxFontSize = 12, minFontSize = 4, key = "") {
+            if (key == "email") {
+                return 9;
+            }
+            let fontSize = maxFontSize;
+
+            while (fontSize >= minFontSize) {
+                const textWidth = font.widthOfTextAtSize(text, fontSize);
+
+                if (textWidth <= maxWidth) {
+                    return fontSize - 0.2;
+                }
+
+                fontSize -= 0.2;
+            }
+
+            return minFontSize;
+        }
+
+        function drawTextSpaced({ page, text, x, y, font, fontSize = 12, letterSpacing = 5 }) {
+            let currentX = x;
+
+            for (let i = 0; i < text.length; i++) {
+                page.drawText(text[i], {
+                    x: currentX,
+                    y,
+                    size: fontSize,
+                    font,
+                });
+
+                // Move by actual char width + extra spacing
+                const charWidth = font.widthOfTextAtSize(text[i], fontSize);
+                currentX += charWidth + letterSpacing;
+            }
+        }
+
+        // ---- gather data from form ----
+        const genderVal = document.querySelector('input[name="gender"]:checked')?.value;
+        const isMale = genderVal === 'Male', isFemale = genderVal === 'Female', isTrans = genderVal === 'Transgender';
+        const resStatusVal = document.getElementById('resStatus').value;
+        const addCom = document.getElementById("addCom").value;
+        const dobProof = document.getElementById("dobProof").value;
+        const raProof = document.getElementById("raProof").value;
+        
+        // Mapping fields exactly as per coordinates given
+        // page 0 fields
+        drawCentered(pages[0], document.getElementById('firstName').value, 180.61, 637.89, 15.35, font);
+        drawCentered(pages[0], document.getElementById('middleName').value, 180.73, 623.89, 15.35, font);
+        drawCentered(pages[0], document.getElementById('lastName').value, 180.73, 610.89, 15.35, font);
+        drawCentered(pages[0], document.getElementById('aadhaarFirstName').value, 180.56, 579.89, 15.34, font);
+        drawCentered(pages[0], document.getElementById('aadhaarMiddleName').value, 180.84, 565.89, 15.34, font);
+        drawCentered(pages[0], document.getElementById('aadhaarLastName').value, 180.61, 552.89, 15.35, font);
+        if(isMale) drawTick(pages[0], 183, 540);
+        if(isFemale) drawTick(pages[0], 229, 540);
+        if(isTrans) drawTick(pages[0], 291, 540);
+        const dobVal = document.getElementById('dob').value;
+        const dobXs = [180.78,195.69,226.63,242.90,272.72,287.63,302.53,317.44,332.34,347.25];
+        drawDigitsArray(pages[0], dobVal, dobXs, 526.39, 14.91, font);
+        const aadhaarXs = [180.78,195.69,211.60,227.01,242.42,257.33,272.74,287.65,302.56,316.47,332.38,347.29];
+        drawDigitsArray(pages[0], document.getElementById('aadhaarNumber').value, aadhaarXs, 513.19, 14.90, font);
+        drawCentered(pages[0], document.getElementById('resFlat').value, 180.59, 482.89, 15.34, font);
+        drawCentered(pages[0], document.getElementById('resRoad').value, 180.74, 469.39, 15.34, font);
+        drawCentered(pages[0], document.getElementById('resPo').value, 180.81, 455.39, 15.34, font);
+        drawCentered(pages[0], document.getElementById('resArea').value, 180.95, 442.39, 15.35, font);
+        drawCentered(pages[0], document.getElementById('resDistrict').value, 181.02, 429, 15.35, font);
+        drawFullText(pages[0], document.getElementById('resState').value, 135.07, 415.09, 82, font);
+        drawFullText(pages[0], document.getElementById('resCountry').value, 292.8, 415.09, 82, font);
+        const pinXs = [457.13,472.48,487.83,503.18,518.53,533.88,549.23,564.58];
+        drawDigitsArray(pages[0], document.getElementById('resPin').value, pinXs, 415.09, 15.35, font);
+        drawCentered(pages[0], document.getElementById('offFlat').value, 180.78, 385.39, 15.35, font);
+        drawCentered(pages[0], document.getElementById('offRoad').value, 180.90, 371.39, 15.34, font);
+        drawCentered(pages[0], document.getElementById('offPo').value, 180.90, 358.39, 15.34, font);
+        drawCentered(pages[0], document.getElementById('offArea').value, 180.73, 344.89, 15.34, font);
+        drawCentered(pages[0], document.getElementById('offDistrict').value, 180.61, 331.39, 15.36, font);
+        drawFullText(pages[0], document.getElementById('offState').value, 135.07, 317.22, 82, font);
+        drawFullText(pages[0], document.getElementById('offCountry').value, 292.8, 317.22, 82, font);
+        drawDigitsArray(pages[0], document.getElementById('offPin').value, pinXs, 317.22, 15.35, font);
+        if(resStatusVal === 'Resident') drawTick(pages[0], 212.4, 301.39);
+        if(resStatusVal === 'Non-resident') drawTick(pages[0], 274.4, 301.39);
+        if(resStatusVal === 'Resident but not ordinarily resident') drawTick(pages[0], 352.4, 301.39);
+        drawCentered(pages[0], document.getElementById('passport').value, 328.82, 281.39, 14.82, font);
+        drawCentered(pages[0], document.getElementById('tin').value, 270.02, 261.19, 14.74, font);
+        // const mobileRaw = document.getElementById('mobile').value;
+        // let countryCode = mobileRaw.slice(0, Math.min(3,mobileRaw.length-8));
+        const countryCode = document.getElementById('countryCode').value;
+        const mobileNum = document.getElementById('mobileNum').value;
+        drawDigitsArray(pages[0], countryCode, [240.31,255.66,271.01], 230.39, 14.74, font);
+        drawDigitsArray(pages[0], mobileNum, [377.17,391.91,406.65,421.39,436.13,450.87,465.61,480.35,495.09,509.83], 230.39, 14.74, font);
+        drawFullText(pages[0], document.getElementById('email').value, 242.31, 217.39, 257, font, 9);
+        // const landlineRaw = document.getElementById('landline').value;
+        // let std = landlineRaw.slice(0,4), land = landlineRaw.slice(4);
+        const std = document.getElementById('stdCode').value;
+        const land = document.getElementById('landlineNum').value;
+        drawDigitsArray(pages[0], std, [240.01,255.36,270.5,285.8], 204.09, 14.74, font);
+        drawDigitsArray(pages[0], land, [376.75,392.05,407.35,422.65,437.95,453.25,468.6,483.9], 204.09, 14.74, font);
+        
+        const incomesVAl = Array.from(document.querySelectorAll('input[name="income"]:checked')).map(el => el.value);
+        
+        if(incomesVAl.includes('Salary')) drawTick(pages[0], 181.47, 164.02);
+        if(incomesVAl.includes('Business')) drawTick(pages[0], 258.8, 164.02);
+        if(incomesVAl.includes('House Property')) drawTick(pages[0], 397.47, 164.02);
+        if(incomesVAl.includes('Capital Gains')) drawTick(pages[0], 182.14, 148.2);
+        if(incomesVAl.includes('Other')) drawTick(pages[0], 258.8, 148.2);
+        if(incomesVAl.includes('No Income')) drawTick(pages[0], 398, 148.2);
+
+        const singleParentVal = document.getElementById('singleParent').value;
+        if(singleParentVal === 'Yes') drawTick(pages[0], 243.50, 109);
+        else drawTick(pages[0], 305.5, 109);
+        // page 1 fields - parents, AO, RA
+        drawCentered(pages[0], document.getElementById('fatherFirst').value, 179.67, 94.5, 15.34, font);
+        drawCentered(pages[0], document.getElementById('fatherMiddle').value, 179.81, 80.5, 15.34, font);
+        drawCentered(pages[0], document.getElementById('fatherLast').value, 179.67, 67.5, 15.34, font);
+        drawCentered(pages[1], document.getElementById('motherFirst').value, 179.67, 811.56, 15.34, font);
+        drawCentered(pages[1], document.getElementById('motherMiddle').value, 179.81, 797.52, 15.34, font);
+        drawCentered(pages[1], document.getElementById('motherLast').value, 179.67, 784.50, 15.34, font);
+        if(document.getElementById('printParent').value === 'Father') drawTick(pages[1], 335.77, 768.20);
+        else drawTick(pages[1], 397.28, 768.20);
+        drawDigitsArray(pages[1], document.getElementById('aoArea').value, [237.13,252.47,268.81], 726.89, 14.74, font);
+        drawDigitsArray(pages[1], document.getElementById('aoType').value, [397.13,412.47], 726.89, 14.74, font);
+        drawDigitsArray(pages[1], document.getElementById('aoRange').value, [237.13,252.47,268.81], 712.89, 14.74, font);
+        drawDigitsArray(pages[1], document.getElementById('aoNumber').value, [397.13,412.47], 712.89, 14.74, font);
+        drawCentered(pages[1], document.getElementById('raFirst').value, 176.67, 669.56, 15.34, font);
+        drawCentered(pages[1], document.getElementById('raMiddle').value, 176.81, 655.86, 15.34, font);
+        drawCentered(pages[1], document.getElementById('raLast').value, 176.67, 642.72, 15.34, font);
+        drawCentered(pages[1], document.getElementById('raPan').value, 177.87, 626.89, 15.35, font);
+        drawDigitsArray(pages[1], document.getElementById('raAadhaar').value, [280.52,295.87,311.22,326.57,341.92,357.27,372.62,387.97,403.32,418.67,434.02,449.37], 611.09, 15.35, font);
+
+        drawCentered(pages[1], document.getElementById('raFlat').value, 178.59, 579.06, 15.35, font);
+        drawCentered(pages[1], document.getElementById('raRoad').value, 178.74, 565.80, 15.34, font);
+        drawCentered(pages[1], document.getElementById('raPost').value, 178.81, 552.26, 15.34, font);
+        drawCentered(pages[1], document.getElementById('raArea').value, 178.55, 538.76, 15.34, font);
+        drawCentered(pages[1], document.getElementById('raDistrict').value, 179.02, 525.69, 15.36, font);
+        drawFullText(pages[1], document.getElementById('raState').value, 130.07, 512, 82, font);
+        drawFullText(pages[1], document.getElementById('raCountry').value, 287.8, 512, 82, font);
+        drawDigitsArray(pages[1], document.getElementById('raPin').value, [454.13,469.48,484.83,500.18,515.53,530.88,546.23,561.58], 512, 15.35, font);
+
+        const racountryCode = document.getElementById('racountryCode').value;
+        const ramobileNum = document.getElementById('ramobileNum').value;
+        drawDigitsArray(pages[1], racountryCode, [238.01, 253.66, 269.01], 481, 14.74, font);
+        drawDigitsArray(pages[1], ramobileNum, [360.09, 374.25, 388.91, 403.65, 418.69, 434.53, 449.3, 464.01, 478.85, 493.59], 481, 14.74, font);
+        drawFullText(pages[1], document.getElementById('raEmail').value, 240.31, 467.09, 257, font, 9);
+        // const landlineRaw = document.getElementById('landline').value;
+        // let std = landlineRaw.slice(0,4), land = landlineRaw.slice(4);
+        const rastdCode = document.getElementById('rastdCode').value;
+        const ralandlineNum = document.getElementById('ralandlineNum').value;
+        drawDigitsArray(pages[1], rastdCode, [238.01, 253.36, 268.5, 283.8], 453.29, 14.74, font);
+        drawDigitsArray(pages[1], ralandlineNum, [360.09, 374.25, 388.91, 403.65, 418.69, 434.53, 449.3, 464.01], 453.29, 14.74, font);
+
+
+        if(addCom === 'reAddress') drawTick(pages[1], 216.8, 417.70);
+        if(addCom === 'raAddress') drawTick(pages[1], 302.8, 417.70);
+        if(addCom === 'offAddress') drawTick(pages[1], 448.8, 417.70);
+
+        if(dobProof === 'dobPOI') drawTick(pages[1], 71.47, 360.70);
+        if(dobProof === 'dobPOA') drawTick(pages[1], 170.13, 360.70);
+        if(dobProof === 'dobPOB') drawTick(pages[1], 271.17, 360.70);
+
+        if(raProof === 'raPOI') drawTick(pages[1], 71.47, 323.70);
+        if(raProof === 'raPOA') drawTick(pages[1], 170.13, 323.70);
+        
+        const pdfBytes = await pdfDoc.save();
+        const blobUrl = URL.createObjectURL(new Blob([pdfBytes], {type:'application/pdf'}));
+        const previewDiv = document.getElementById('pdfPreviewContainer');
+        previewDiv.innerHTML = `<iframe class="pdf-iframe" src="${blobUrl}"></iframe>`;
+        if(!onlyPreview) {
+            download(pdfBytes, fileName, "application/pdf");
+        }
+        return pdfBytes;
+    }
+
+    document.getElementById('refreshPreviewBtn').addEventListener('click', async () => {
+        if(!currentPdfBytes) { alert("Please upload static Form 93 PDF first."); return; }
+        await generateFilledPdfAndPreview(true, false);
+    });
+    document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
+        if(!currentPdfBytes) { alert("Upload PDF template first."); return; }
+        await generateFilledPdfAndPreview(false, true);
+    });
+
+    function copySameAs(type) {
+        if (type === 'document') {
+            ['firstName','middleName','lastName'].forEach(f => {
+            var ucFirst = f => f.replace(/^./, m => m.toUpperCase());
+            // console.log('Copying', f, 'to Aadhaar field', 'aadhaar'+ucFirst(f));
+            document.getElementById('aadhaar'+ucFirst(f)).value = document.getElementById(f).value;
+            });
+        } else if (type === 'residence') {
+            ['Flat','Road','Po','Area','District','State','Country','Pin'].forEach(f => {
+            document.getElementById('off'+f).value = document.getElementById('res'+f).value;
+            });
+        } else if (type === 'ra') {
+            ['FlatDoor','RoadStreet','PostOffice','AreaLocality','District'].forEach(f => {
+            document.getElementById('raa'+f).value = document.getElementById('res'+f).value;
+            });
+            document.getElementById('raaState').value = document.getElementById('resState').value || '';
+            document.getElementById('raaCountry').value = document.getElementById('resCountry').value;
+            document.getElementById('raaPin').value = document.getElementById('resPin').value;
+        }
+        // sync();
+    }
+
+    function updateIncomeFields(event) {
+        // Safety check: ensure an element triggered this function
+        if (!event || !event.target) return;
+
+        const clickedElement = event.target;
+
+        // 1. If user just checked "No Income", uncheck all regular income sources
+        if (clickedElement.classList.contains('no-income-checkbox') && clickedElement.checked) {
+            document.querySelectorAll('input[name="income"].income-checkbox')
+                    .forEach(cb => cb.checked = false);
+        } 
+        
+        // 2. If user just checked a regular income source, uncheck "No Income"
+        else if (clickedElement.classList.contains('income-checkbox') && clickedElement.checked) {
+            document.querySelectorAll('input[name="income"].no-income-checkbox')
+                    .forEach(cb => cb.checked = false);
+        }
+    }
+
+    // ------- Collapsible sections (title-main) -------
+    (function() {
+        function initCollapsibles() {
+            document.querySelectorAll('.form-section').forEach(section => {
+                const header = section.querySelector('.section-title.title-main');
+                if (!header) return;
+
+                // add toggle icon if missing
+                if (!header.querySelector('.toggle-icon')) {
+                    const icon = document.createElement('span');
+                    icon.className = 'toggle-icon';
+                    icon.innerHTML = '&#9656;';
+                    icon.setAttribute('aria-hidden', 'true');
+                    header.appendChild(icon);
+                }
+
+                header.setAttribute('role', 'button');
+                header.setAttribute('tabindex', '0');
+                header.setAttribute('aria-expanded', 'false');
+
+                // default collapsed
+                section.classList.add('collapsed');
+
+                const toggle = () => {
+                    const isCollapsed = section.classList.toggle('collapsed');
+                    header.setAttribute('aria-expanded', (!isCollapsed).toString());
+                };
+
+                header.addEventListener('click', toggle);
+                header.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCollapsibles);
+        else initCollapsibles();
+    })();
+
+</script>
+</body>
+</html>
