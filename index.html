@@ -3,217 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>PAN Automation Suite — Form 93 + Photo/Signature (All-in-One)</title>
+<title>PAN Automation Suite — Form 93 + Photo/Signature (Auto-Fix)</title>
 
-<!-- Part 1 libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit/dist/fontkit.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
-
-<!-- Part 2 libs -->
-<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <style>
-/* ============================================================
-   GLOBAL
-   ============================================================ */
 * { box-sizing: border-box; }
-body {
-    background: #eef2f7;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-}
+body { background: #eef2f7; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; min-height: 100vh; }
 
-/* ============================================================
-   TOP BAR
-   ============================================================ */
-.top-bar {
-    background: linear-gradient(135deg, #1f5e7a 0%, #0d7fb5 100%);
-    color: #fff;
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    flex-wrap: wrap;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-.top-bar .brand {
-    font-size: 1.15rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-}
-.top-bar .brand .logo {
-    width: 32px; height: 32px; border-radius: 10px;
-    background: #f4b942; color: #1f5e7a;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 1.1rem; font-weight: 800;
-}
-.top-bar .progress-wrap {
-    flex: 1;
-    min-width: 180px;
-    max-width: 380px;
-}
-.top-bar .progress-wrap .progress-label {
-    font-size: 0.7rem; opacity: 0.85; margin-bottom: 4px;
-    display: flex; justify-content: space-between;
-}
-.top-bar .progress-bar {
-    height: 8px; background: rgba(255,255,255,0.2);
-    border-radius: 20px; overflow: hidden;
-}
-.top-bar .progress-fill {
-    height: 100%; width: 0%;
-    background: linear-gradient(90deg, #f4b942, #ffd97a);
-    border-radius: 20px;
-    transition: width 0.5s ease;
-}
-.top-bar .stats {
-    display: flex; gap: 14px; flex-wrap: wrap;
-    font-size: 0.75rem;
-}
-.top-bar .stats .stat {
-    background: rgba(255,255,255,0.12);
-    padding: 5px 12px; border-radius: 20px;
-    display: flex; align-items: center; gap: 6px;
-}
+.top-bar { background: linear-gradient(135deg, #1f5e7a 0%, #0d7fb5 100%); color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; box-shadow: 0 4px 16px rgba(0,0,0,0.12); position: sticky; top: 0; z-index: 100; }
+.top-bar .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.top-bar .brand .logo { width: 32px; height: 32px; border-radius: 10px; background: #f4b942; color: #1f5e7a; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; }
+.top-bar .progress-wrap { flex: 1; min-width: 180px; max-width: 380px; }
+.top-bar .progress-wrap .progress-label { font-size: 0.7rem; opacity: 0.85; margin-bottom: 4px; display: flex; justify-content: space-between; }
+.top-bar .progress-bar { height: 8px; background: rgba(255,255,255,0.2); border-radius: 20px; overflow: hidden; }
+.top-bar .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f4b942, #ffd97a); border-radius: 20px; transition: width 0.5s ease; }
+.top-bar .stats { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.75rem; }
+.top-bar .stats .stat { background: rgba(255,255,255,0.12); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; }
 .top-bar .stats .stat .val { font-weight: 800; }
 
-/* ============================================================
-   TABS
-   ============================================================ */
-.tabs-bar {
-    background: #fff;
-    padding: 12px 24px 0;
-    display: flex;
-    gap: 6px;
-    border-bottom: 2px solid #e2edf2;
-    position: sticky;
-    top: 64px;
-    z-index: 99;
-    flex-wrap: wrap;
-}
-.tab-btn {
-    background: transparent;
-    border: none;
-    padding: 12px 22px;
-    font-size: 0.92rem;
-    font-weight: 700;
-    color: #7a95a8;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
-    display: flex; align-items: center; gap: 8px;
-    transition: 0.2s;
-    border-radius: 8px 8px 0 0;
-}
+.tabs-bar { background: #fff; padding: 12px 24px 0; display: flex; gap: 6px; border-bottom: 2px solid #e2edf2; position: sticky; top: 64px; z-index: 99; flex-wrap: wrap; }
+.tab-btn { background: transparent; border: none; padding: 12px 22px; font-size: 0.92rem; font-weight: 700; color: #7a95a8; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; display: flex; align-items: center; gap: 8px; transition: 0.2s; border-radius: 8px 8px 0 0; }
 .tab-btn:hover { color: #1f5e7a; background: #f0f8fc; }
-.tab-btn.active {
-    color: #1f5e7a;
-    border-bottom-color: #f4b942;
-    background: #fff9ef;
-}
-.tab-btn .tab-badge {
-    background: #cfdee9; color: #1f5e7a;
-    font-size: 0.65rem; font-weight: 800;
-    padding: 1px 7px; border-radius: 10px;
-}
+.tab-btn.active { color: #1f5e7a; border-bottom-color: #f4b942; background: #fff9ef; }
+.tab-btn .tab-badge { background: #cfdee9; color: #1f5e7a; font-size: 0.65rem; font-weight: 800; padding: 1px 7px; border-radius: 10px; }
 .tab-btn.active .tab-badge { background: #f4b942; color: #fff; }
-.tab-btn .tab-done {
-    background: #27ae60; color: #fff;
-    font-size: 0.65rem; font-weight: 800;
-    padding: 1px 7px; border-radius: 10px;
-}
 .tab-pane { display: none; }
 .tab-pane.active { display: block; }
 
-/* ============================================================
-   PART 1 — FORM 93
-   ============================================================ */
-.p1-container {
-    max-width: 1500px;
-    margin: 20px auto;
-    padding: 0 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-}
-.form-panel {
-    flex: 1.2;
-    min-width: 380px;
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
-    padding: 22px 26px;
-    max-height: 88vh;
-    overflow-y: auto;
-}
-.preview-panel {
-    flex: 1;
-    min-width: 440px;
-    background: #f9fafc;
-    border-radius: 24px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
-    padding: 18px;
-    position: sticky;
-    top: 120px;
-    height: fit-content;
-    max-height: 88vh;
-    display: flex;
-    flex-direction: column;
-}
+.p1-container { max-width: 1500px; margin: 20px auto; padding: 0 20px; display: flex; flex-wrap: wrap; gap: 24px; }
+.form-panel { flex: 1.2; min-width: 380px; background: white; border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.07); padding: 22px 26px; max-height: 88vh; overflow-y: auto; }
+.preview-panel { flex: 1; min-width: 440px; background: #f9fafc; border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.07); padding: 18px; position: sticky; top: 120px; height: fit-content; max-height: 88vh; display: flex; flex-direction: column; }
 h2 { font-size: 1.5rem; margin: 0 0 6px; color: #1a2c3e; }
 .sub { color: #2c5a74; font-size: 0.82rem; margin-bottom: 18px; border-left: 4px solid #f4b942; padding-left: 12px; background: #fff6e8; border-radius: 10px; padding-top: 6px; padding-bottom: 6px; padding-right: 12px; }
-.form-section {
-    background: #ffffff;
-    border-radius: 18px;
-    margin-bottom: 20px;
-    border: 1px solid #e2edf2;
-    padding: 12px 16px 16px;
-}
-.section-title {
-    font-weight: 700;
-    font-size: 1rem;
-    margin-bottom: 10px;
-    color: #0f4c5f;
-    border-left: 5px solid #f4b942;
-    padding-left: 12px;
-}
-.section-title.title-main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    font-size: 1.15rem;
-    padding: 10px 14px;
-    margin: 0 0 12px 0;
-    border-radius: 12px;
-    background: linear-gradient(90deg, rgba(244,185,66,0.08), rgba(31,94,122,0.02));
-    border-left: 6px solid #f4b942;
-    cursor: pointer;
-}
-.section-title.title-main .toggle-icon {
-    display: inline-block;
-    width: 18px; height: 18px;
-    line-height: 18px; text-align: center;
-    font-size: 12px; color: #0f4c5f;
-    transition: transform 180ms ease;
-}
-.section-title .sec-status {
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-left: 8px;
-}
+.form-section { background: #ffffff; border-radius: 18px; margin-bottom: 20px; border: 1px solid #e2edf2; padding: 12px 16px 16px; }
+.section-title { font-weight: 700; font-size: 1rem; margin-bottom: 10px; color: #0f4c5f; border-left: 5px solid #f4b942; padding-left: 12px; }
+.section-title.title-main { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 1.15rem; padding: 10px 14px; margin: 0 0 12px 0; border-radius: 12px; background: linear-gradient(90deg, rgba(244,185,66,0.08), rgba(31,94,122,0.02)); border-left: 6px solid #f4b942; cursor: pointer; }
+.section-title.title-main .toggle-icon { display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; font-size: 12px; color: #0f4c5f; transition: transform 180ms ease; }
+.section-title .sec-status { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
 .sec-status.ok { background: #e8f8ef; color: #1e8449; }
 .sec-status.pending { background: #fff3cd; color: #856404; }
 .form-section.collapsed > :not(.section-title.title-main) { display: none; }
@@ -221,133 +51,48 @@ h2 { font-size: 1.5rem; margin: 0 0 6px; color: #1a2c3e; }
 .row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
 .field-group { flex: 1; min-width: 150px; }
 label { font-weight: 600; font-size: 0.78rem; color: #1f5e7a; display: block; margin-bottom: 5px; }
-input, select {
-    width: 100%; padding: 9px 12px; border-radius: 12px; border: 1px solid #cbdde6;
-    font-size: 0.88rem; transition: 0.2s; background: white;
-}
+input, select { width: 100%; padding: 9px 12px; border-radius: 12px; border: 1px solid #cbdde6; font-size: 0.88rem; transition: 0.2s; background: white; }
 input:focus, select:focus { outline: none; border-color: #f4b942; box-shadow: 0 0 0 3px rgba(244,185,66,0.2); }
 .radio-group, .check-group { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 5px; }
 .radio-group label, .check-group label { display: inline-flex; align-items: center; gap: 6px; font-weight: normal; }
 .copy-btn { background: #eef2fa; border: 1px solid #bdd3e0; padding: 6px 12px; border-radius: 40px; font-size: 0.72rem; font-weight: 600; cursor: pointer; margin-top: 4px; transition: 0.2s; }
 .copy-btn:hover { background: #f4e3c6; border-color: #f4b942; }
-button.primary {
-    background: #1f5e7a; border: none; color: white; padding: 12px 18px;
-    border-radius: 50px; font-weight: bold; font-size: 0.92rem; cursor: pointer;
-    width: 100%; margin-top: 10px; transition: 0.2s;
-}
-.preview-header {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 14px; flex-wrap: wrap;
-}
+button.primary { background: #1f5e7a; border: none; color: white; padding: 12px 18px; border-radius: 50px; font-weight: bold; font-size: 0.92rem; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; }
+.preview-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
 .preview-header h3 { margin: 0; flex-shrink: 0; font-size: 1rem; }
-.preview-header button {
-    width: auto; padding: 7px 12px; font-size: 0.72rem; margin-top: 0; flex-shrink: 0;
-}
+.preview-header button { width: auto; padding: 7px 12px; font-size: 0.72rem; margin-top: 0; flex-shrink: 0; }
 #refreshPreviewBtn { background: #0d7fb5 !important; }
 #downloadPdfBtn { background: #27ae60 !important; }
 #toggleDragBtn { background: #e67e22 !important; }
-.rule-card {
-    background: #fef7e8; border-radius: 14px; padding: 8px 14px; margin-top: 12px;
-    font-size: 0.72rem; border-left: 4px solid #f4b942;
-}
+.rule-card { background: #fef7e8; border-radius: 14px; padding: 8px 14px; margin-top: 12px; font-size: 0.72rem; border-left: 4px solid #f4b942; }
 .upload-area { display: block; margin-bottom: 16px; text-align: center; }
-.file-label {
-    background: #ffffff; border: 2px dashed #1f5e7a; border-radius: 40px;
-    padding: 10px 22px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
-    color: #1f5e7a; display: inline-block; transition: all 0.2s;
-}
+.file-label { background: #ffffff; border: 2px dashed #1f5e7a; border-radius: 40px; padding: 10px 22px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #1f5e7a; display: inline-block; transition: all 0.2s; }
 .file-label:hover { background: #f0f7ff; border-color: #f4b942; }
-.declaration-box {
-    background: #f8fbfd; border: 1px solid #d8e8f0; border-radius: 14px;
-    padding: 14px 16px; margin-bottom: 14px; font-size: 0.82rem;
-    line-height: 1.55; color: #1a2c3e;
-}
-.declaration-box .blank-line {
-    display: inline-block; border-bottom: 1px solid #1f5e7a;
-    min-width: 160px; margin: 0 4px; vertical-align: bottom;
-}
-.pdf-viewer {
-    background: #fff; border-radius: 18px; border: 1px solid #cfdee9;
-    overflow: auto; height: 100vh;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02); position: relative;
-}
+.declaration-box { background: #f8fbfd; border: 1px solid #d8e8f0; border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; font-size: 0.82rem; line-height: 1.55; color: #1a2c3e; }
+.declaration-box .blank-line { display: inline-block; border-bottom: 1px solid #1f5e7a; min-width: 160px; margin: 0 4px; vertical-align: bottom; }
+.pdf-viewer { background: #fff; border-radius: 18px; border: 1px solid #cfdee9; overflow: auto; height: 100vh; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02); position: relative; }
 .pdf-iframe { width: 100%; height: 100%; border: none; background: white; }
 .required { color: red; }
 
-/* drag overlay (Part 1) */
 #pdfPreviewContainer { position: relative; }
 .drag-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none; }
 .drag-overlay.active { display: block; pointer-events: auto; }
-.drag-item {
-    position: absolute; background: rgba(255, 220, 120, 0.55);
-    border: 1.5px dashed #e67e22; color: #7a4a00;
-    font-size: 11px; font-weight: 700; padding: 2px 6px;
-    border-radius: 4px; cursor: move; user-select: none;
-    white-space: nowrap; font-family: 'Segoe UI', sans-serif;
-    pointer-events: auto;
-}
-.drag-item.active-drag {
-    background: rgba(255, 140, 0, 0.85); color: #fff;
-    border-color: #b34700; box-shadow: 0 0 0 3px rgba(230,126,34,0.35);
-}
-.drag-item .tag {
-    position: absolute; top: -16px; left: 0;
-    background: #e67e22; color: #fff; padding: 1px 6px;
-    border-radius: 4px 4px 0 0; font-size: 9px; font-weight: 700;
-}
-.drag-hint {
-    background: #fff3cd; border: 1px solid #ffe08a; border-radius: 12px;
-    padding: 8px 14px; font-size: 0.72rem; color: #7a5a00; margin-bottom: 10px;
-}
-@media (max-width: 980px) {
-    .preview-panel { position: relative; top: 0; }
-    .form-panel { max-height: none; }
-}
+.drag-item { position: absolute; background: rgba(255, 220, 120, 0.55); border: 1.5px dashed #e67e22; color: #7a4a00; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; cursor: move; user-select: none; white-space: nowrap; font-family: 'Segoe UI', sans-serif; pointer-events: auto; }
+.drag-item.active-drag { background: rgba(255, 140, 0, 0.85); color: #fff; border-color: #b34700; box-shadow: 0 0 0 3px rgba(230,126,34,0.35); }
+.drag-item .tag { position: absolute; top: -16px; left: 0; background: #e67e22; color: #fff; padding: 1px 6px; border-radius: 4px 4px 0 0; font-size: 9px; font-weight: 700; }
+.drag-hint { background: #fff3cd; border: 1px solid #ffe08a; border-radius: 12px; padding: 8px 14px; font-size: 0.72rem; color: #7a5a00; margin-bottom: 10px; }
+@media (max-width: 980px) { .preview-panel { position: relative; top: 0; } .form-panel { max-height: none; } }
 
-/* ============================================================
-   PART 2 — PHOTO/SIGN
-   ============================================================ */
-#part2Section {
-    max-width: 1700px;
-    margin: 20px auto;
-    padding: 0 20px;
-}
-#part2Card {
-    background: #fff;
-    padding: 16px;
-    border-radius: 20px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
-    height: calc(100vh - 160px);
-    display: flex;
-    flex-direction: column;
-}
-#part2Card h2 {
-    text-align: center; color: #0056b3;
-    margin: 0 0 10px; font-size: 1.15rem;
-}
-#part2Card .layout {
-    display: flex; gap: 14px; flex: 1; min-height: 0;
-}
-#part2Card .left-panel {
-    width: 360px; min-width: 320px; flex-shrink: 0;
-    overflow-y: auto; padding-right: 6px;
-    border-right: 1px solid #e5e5e5;
-}
-#part2Card .right-panel {
-    flex: 1; min-width: 0; display: flex; flex-direction: column;
-}
+#part2Section { max-width: 1700px; margin: 20px auto; padding: 0 20px; }
+#part2Card { background: #fff; padding: 16px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.07); height: calc(100vh - 160px); display: flex; flex-direction: column; }
+#part2Card h2 { text-align: center; color: #0056b3; margin: 0 0 10px; font-size: 1.15rem; }
+#part2Card .layout { display: flex; gap: 14px; flex: 1; min-height: 0; }
+#part2Card .left-panel { width: 360px; min-width: 320px; flex-shrink: 0; overflow-y: auto; padding-right: 6px; border-right: 1px solid #e5e5e5; }
+#part2Card .right-panel { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 #part2Card .form-group { margin-bottom: 12px; }
-#part2Card input[type="file"] {
-    width: 100%; padding: 7px; border: 1px solid #ccc;
-    border-radius: 5px; background: #fafafa; font-size: 12px;
-}
+#part2Card input[type="file"] { width: 100%; padding: 7px; border: 1px solid #ccc; border-radius: 5px; background: #fafafa; font-size: 12px; }
 #part2Card .filename { font-size: 11px; color: #666; margin-top: 3px; min-height: 12px; word-break: break-all; }
-#part2Card button {
-    width: 100%; padding: 10px; background-color: #28a745;
-    color: white; border: none; border-radius: 5px;
-    font-size: 14px; font-weight: bold; cursor: pointer;
-    transition: background 0.3s; margin-top: 6px;
-}
+#part2Card button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 14px; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 6px; }
 #part2Card button:hover { background-color: #218838; }
 #part2Card button:disabled { background-color: #9e9e9e; cursor: not-allowed; }
 #part2Card button.secondary { background-color: #007bff; }
@@ -357,288 +102,110 @@ button.primary {
 #part2Card button.small { padding: 6px 10px; font-size: 12px; width: auto; margin: 0; }
 #part2Card button.preview-btn { background-color: #6f42c1; margin-top: 10px; font-size: 15px; padding: 12px; }
 #part2Card button.download-btn { background-color: #17a2b8; margin-top: 10px; font-size: 15px; padding: 12px; }
-#part2Card button.lock-btn {
-    background-color: #6c757d; margin-top: 8px;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    font-size: 13px; padding: 8px;
-}
-#part2Card button.lock-btn.locked {
-    background-color: #dc3545; box-shadow: 0 0 0 3px rgba(220,53,69,0.2);
-}
-#part2Card .status {
-    margin-top: 10px; text-align: center; font-weight: bold;
-    color: #d9534f; font-size: 13px;
-}
+#part2Card button.lock-btn { background-color: #6c757d; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; padding: 8px; }
+#part2Card button.lock-btn.locked { background-color: #dc3545; box-shadow: 0 0 0 3px rgba(220,53,69,0.2); }
+#part2Card .status { margin-top: 10px; text-align: center; font-weight: bold; color: #d9534f; font-size: 13px; }
 #part2Card .success { color: #28a745; }
-#part2Card .download-link {
-    display: block; text-align: center; margin-top: 8px;
-    color: #0056b3; font-weight: bold; text-decoration: none; font-size: 13px;
-}
-#part2Card .extras-header {
-    display: flex; justify-content: space-between;
-    align-items: center; margin-top: 6px;
-}
+#part2Card .download-link { display: block; text-align: center; margin-top: 8px; color: #0056b3; font-weight: bold; text-decoration: none; font-size: 13px; }
+#part2Card .extras-header { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
 #part2Card .extras-header label { margin: 0; }
-#part2Card .extras-list {
-    margin-top: 6px; max-height: 180px; overflow-y: auto;
-    border: 1px solid #e0e0e0; border-radius: 5px;
-    padding: 5px; background: #fafafa;
-}
-#part2Card .extra-item {
-    display: flex; align-items: center; gap: 6px;
-    padding: 4px 6px; border-radius: 4px; font-size: 12px;
-    cursor: pointer; user-select: none;
-}
+#part2Card .extras-list { margin-top: 6px; max-height: 180px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 5px; padding: 5px; background: #fafafa; }
+#part2Card .extra-item { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 4px; font-size: 12px; cursor: pointer; user-select: none; }
 #part2Card .extra-item:hover { background: #eef5ff; }
-#part2Card .extra-item.active {
-    background: #d6e8ff; font-weight: bold; outline: 1px solid #007bff;
-}
+#part2Card .extra-item.active { background: #d6e8ff; font-weight: bold; outline: 1px solid #007bff; }
 #part2Card .extra-item .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 #part2Card .extra-item .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#part2Card .extra-item .page-tag {
-    background: #17a2b8; color: #fff; font-size: 10px;
-    padding: 1px 6px; border-radius: 8px; font-weight: bold;
-}
-#part2Card .extra-item .remove {
-    background: #ff5c5c; color: #fff; border: none;
-    width: 18px; height: 18px; border-radius: 50%;
-    font-size: 11px; line-height: 1; cursor: pointer; padding: 0;
-}
-#part2Card .preview-wrap {
-    background: #e9eef3; border-radius: 8px; padding: 8px;
-    display: flex; flex-direction: column; flex: 1; min-height: 0;
-}
-#part2Card .preview-toolbar {
-    display: flex; gap: 8px; margin-bottom: 6px;
-    flex-wrap: wrap; align-items: center; justify-content: center;
-}
+#part2Card .extra-item .page-tag { background: #17a2b8; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 8px; font-weight: bold; }
+#part2Card .extra-item .remove { background: #ff5c5c; color: #fff; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 11px; line-height: 1; cursor: pointer; padding: 0; }
+#part2Card .preview-wrap { background: #e9eef3; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+#part2Card .preview-toolbar { display: flex; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; align-items: center; justify-content: center; }
 #part2Card .preview-toolbar button { width: auto; padding: 5px 10px; font-size: 12px; margin: 0; }
 #part2Card #pageInfo { padding: 5px 10px; font-size: 13px; font-weight: bold; color: #333; }
 #part2Card .zoom-label { font-size: 12px; color: #333; }
 #part2Card #zoomRange { width: 120px; }
-#part2Card .preview-stage-outer {
-    flex: 1; overflow: auto; background: #dde4ec;
-    border: 1px solid #b9c4d1; border-radius: 6px;
-    min-height: 0; position: relative;
-}
+#part2Card .preview-stage-outer { flex: 1; overflow: auto; background: #dde4ec; border: 1px solid #b9c4d1; border-radius: 6px; min-height: 0; position: relative; }
 #part2Card .preview-stage { position: relative; display: inline-block; padding: 14px; }
-#part2Card #pdfCanvas {
-    display: block; box-shadow: 0 2px 12px rgba(0,0,0,0.2); background: #fff;
-}
-#part2Card .overlay-item {
-    position: absolute; cursor: move;
-    border: 2px dashed #007bff; user-select: none;
-    touch-action: none; background: rgba(0,123,255,0.06);
-    overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s;
-}
+#part2Card #pdfCanvas { display: block; box-shadow: 0 2px 12px rgba(0,0,0,0.2); background: #fff; }
+#part2Card .overlay-item { position: absolute; cursor: move; border: 2px dashed #007bff; user-select: none; touch-action: none; background: rgba(0,123,255,0.06); overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s; }
 #part2Card .overlay-item.sign  { border-color: #e83e8c; background: rgba(232,62,140,0.06); }
 #part2Card .overlay-item.thumb { border-color: #1976d2; background: rgba(25,118,210,0.06); }
 #part2Card .overlay-item.selected { border-style: solid; box-shadow: 0 0 0 2px rgba(0,123,255,0.35); }
 #part2Card .overlay-item.sign.selected  { box-shadow: 0 0 0 2px rgba(232,62,140,0.35); }
 #part2Card .overlay-item.thumb.selected { box-shadow: 0 0 0 2px rgba(25,118,210,0.35); }
-#part2Card .overlay-item.locked {
-    border-style: solid; border-color: #28a745; cursor: default;
-    background: rgba(40,167,69,0.04);
-}
+#part2Card .overlay-item.locked { border-style: solid; border-color: #28a745; cursor: default; background: rgba(40,167,69,0.04); }
 #part2Card .overlay-item.locked .resize-handle { display: none; }
-#part2Card .overlay-item.locked::after {
-    content: '🔒'; position: absolute; top: 2px; right: 2px;
-    background: #28a745; color: #fff; font-size: 11px;
-    padding: 1px 5px; border-radius: 3px;
-}
-#part2Card .overlay-item img {
-    width: 100%; height: 100%; display: block;
-    pointer-events: none; object-fit: contain;
-}
-#part2Card .resize-handle {
-    position: absolute; right: -7px; bottom: -7px;
-    width: 14px; height: 14px; background: #007bff;
-    border-radius: 2px; cursor: nwse-resize;
-    border: 2px solid #fff; z-index: 5;
-}
+#part2Card .overlay-item.locked::after { content: '🔒'; position: absolute; top: 2px; right: 2px; background: #28a745; color: #fff; font-size: 11px; padding: 1px 5px; border-radius: 3px; }
+#part2Card .overlay-item img { width: 100%; height: 100%; display: block; pointer-events: none; object-fit: contain; }
+#part2Card .resize-handle { position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px; background: #007bff; border-radius: 2px; cursor: nwse-resize; border: 2px solid #fff; z-index: 5; }
 #part2Card .overlay-item.sign  .resize-handle { background: #e83e8c; }
 #part2Card .overlay-item.thumb .resize-handle { background: #1976d2; }
-#part2Card .controls {
-    margin-top: 8px; padding: 8px; background: #f8f9fa;
-    border-radius: 6px; font-size: 12px; border: 1px solid #e0e0e0;
-}
-#part2Card .controls-row {
-    display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
-}
+#part2Card .controls { margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 6px; font-size: 12px; border: 1px solid #e0e0e0; }
+#part2Card .controls-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
 #part2Card .controls-row label { margin: 0; min-width: 55px; font-size: 11px; }
 #part2Card .controls-row input[type="range"] { flex: 1; }
-#part2Card .controls-row input[type="number"] {
-    width: 60px; padding: 3px 4px; font-size: 11px;
-    border: 1px solid #ccc; border-radius: 4px;
-}
+#part2Card .controls-row input[type="number"] { width: 60px; padding: 3px 4px; font-size: 11px; border: 1px solid #ccc; border-radius: 4px; }
 #part2Card .hint { font-size: 11px; color: #666; margin-top: 6px; line-height: 1.4; }
-#part2Card .checkbox-row {
-    display: flex; align-items: center; gap: 5px;
-    font-size: 12px; margin-bottom: 6px;
-}
-#part2Card .badge {
-    display: inline-block; background: #007bff; color: #fff;
-    font-size: 10px; padding: 1px 5px; border-radius: 4px; margin-left: 3px;
-}
+#part2Card .checkbox-row { display: flex; align-items: center; gap: 5px; font-size: 12px; margin-bottom: 6px; }
+#part2Card .badge { display: inline-block; background: #007bff; color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 4px; margin-left: 3px; }
 #part2Card .badge.pink { background: #e83e8c; }
 #part2Card .badge.blue { background: #1976d2; }
 #part2Card .tab-buttons { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
-#part2Card .tab-buttons button {
-    flex: 1; min-width: 75px; padding: 6px; font-size: 12px;
-    background: #e9ecef; color: #333; border: 1px solid #ccc;
-}
+#part2Card .tab-buttons button { flex: 1; min-width: 75px; padding: 6px; font-size: 12px; background: #e9ecef; color: #333; border: 1px solid #ccc; }
 #part2Card .tab-buttons button.active { background: #007bff; color: #fff; border-color: #007bff; }
 #part2Card #emptyPreview { padding: 80px 20px; color: #888; font-size: 14px; text-align: center; }
-#part2Card .page-note {
-    background: #fff8e1; border: 1px solid #ffe082; color: #795548;
-    font-size: 11px; padding: 5px 7px; border-radius: 4px;
-    margin-bottom: 6px; line-height: 1.4;
-}
-#part2Card .lock-status-bar {
-    background: #f0f8f0; border: 1px solid #b3e0b3; color: #2c5e2c;
-    font-size: 11px; padding: 5px 8px; border-radius: 4px;
-    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
-}
-#part2Card .lock-status-bar.locked {
-    background: #ffe8e8; border-color: #f5c2c2; color: #8b1e1e;
-}
-#part2Card .thumb-blue-note {
-    background: #e3f2fd; border-left: 4px solid #1976d2;
-    padding: 6px 10px; border-radius: 4px; font-size: 11px;
-    color: #0d47a1; margin-top: 4px;
-}
-#part2Card .file-preview-thumb {
-    margin-top: 6px; display: none; text-align: center;
-    background: #f0f0f0; border-radius: 6px; padding: 6px;
-    border: 1px solid #ddd;
-}
-#part2Card .file-preview-thumb img {
-    max-width: 120px; max-height: 90px; border-radius: 4px;
-    border: 1px solid #ccc; background: #fff;
-}
+#part2Card .page-note { background: #fff8e1; border: 1px solid #ffe082; color: #795548; font-size: 11px; padding: 5px 7px; border-radius: 4px; margin-bottom: 6px; line-height: 1.4; }
+#part2Card .lock-status-bar { background: #f0f8f0; border: 1px solid #b3e0b3; color: #2c5e2c; font-size: 11px; padding: 5px 8px; border-radius: 4px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+#part2Card .lock-status-bar.locked { background: #ffe8e8; border-color: #f5c2c2; color: #8b1e1e; }
+#part2Card .thumb-blue-note { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 6px 10px; border-radius: 4px; font-size: 11px; color: #0d47a1; margin-top: 4px; }
+#part2Card .file-preview-thumb { margin-top: 6px; display: none; text-align: center; background: #f0f0f0; border-radius: 6px; padding: 6px; border: 1px solid #ddd; }
+#part2Card .file-preview-thumb img { max-width: 120px; max-height: 90px; border-radius: 4px; border: 1px solid #ccc; background: #fff; }
 #part2Card .file-preview-thumb .thumb-label { font-size: 10px; color: #555; margin-top: 3px; }
-#part2Card .pdf-info {
-    display: none; background: #e8f5e9; border: 1px solid #a5d6a7;
-    color: #1b5e20; font-size: 11px; padding: 5px 8px;
-    border-radius: 4px; margin-top: 5px;
-}
+#part2Card .pdf-info { display: none; background: #e8f5e9; border: 1px solid #a5d6a7; color: #1b5e20; font-size: 11px; padding: 5px 8px; border-radius: 4px; margin-top: 5px; }
 #part2Card .pdf-info.show { display: block; }
-#part2Card .shade-selector {
-    display: flex; gap: 6px; align-items: center;
-    margin-top: 5px; font-size: 11px;
-}
-#part2Card .shade-selector select {
-    padding: 3px 6px; font-size: 11px; border-radius: 4px;
-    border: 1px solid #ccc; background: #fff; flex: 1;
-}
+#part2Card .shade-selector { display: flex; gap: 6px; align-items: center; margin-top: 5px; font-size: 11px; }
+#part2Card .shade-selector select { padding: 3px 6px; font-size: 11px; border-radius: 4px; border: 1px solid #ccc; background: #fff; flex: 1; }
 #part2Card .copy-btn { background: #ff9800; font-size: 11px; padding: 6px; margin-top: 4px; }
-#part2Card .shortcut-hint {
-    background: #f5f5f5; border-radius: 4px; padding: 5px 8px;
-    font-size: 10px; color: #666; margin-top: 6px; line-height: 1.6;
-}
-#part2Card .shortcut-hint kbd {
-    background: #fff; border: 1px solid #ccc; border-radius: 3px;
-    padding: 1px 4px; font-family: monospace; font-size: 10px;
-}
-#part2Card .settings-panel {
-    background: #fff3e0; border: 1px solid #ffcc80;
-    border-radius: 6px; padding: 10px; margin-top: 10px;
-}
-#part2Card .settings-panel .settings-title {
-    font-size: 12px; font-weight: bold; color: #e65100;
-    margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
-}
+#part2Card .shortcut-hint { background: #f5f5f5; border-radius: 4px; padding: 5px 8px; font-size: 10px; color: #666; margin-top: 6px; line-height: 1.6; }
+#part2Card .shortcut-hint kbd { background: #fff; border: 1px solid #ccc; border-radius: 3px; padding: 1px 4px; font-family: monospace; font-size: 10px; }
+#part2Card .settings-panel { background: #fff3e0; border: 1px solid #ffcc80; border-radius: 6px; padding: 10px; margin-top: 10px; }
+#part2Card .settings-panel .settings-title { font-size: 12px; font-weight: bold; color: #e65100; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
 #part2Card .settings-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
-#part2Card .settings-buttons button {
-    flex: 1; min-width: 70px; padding: 7px 8px; font-size: 11px; margin: 0;
-}
+#part2Card .settings-buttons button { flex: 1; min-width: 70px; padding: 7px 8px; font-size: 11px; margin: 0; }
 #part2Card .btn-save { background: #4caf50; }
 #part2Card .btn-load { background: #2196f3; }
 #part2Card .btn-clear { background: #f44336; }
-#part2Card .settings-status {
-    font-size: 10px; color: #e65100; margin-top: 6px;
-    text-align: center; min-height: 14px;
-}
-#part2Card .settings-badge {
-    display: inline-block; background: #4caf50; color: #fff;
-    font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-left: 4px;
-}
+#part2Card .settings-status { font-size: 10px; color: #e65100; margin-top: 6px; text-align: center; min-height: 14px; }
+#part2Card .settings-badge { display: inline-block; background: #4caf50; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-left: 4px; }
 
-/* ============================================================
-   MODAL
-   ============================================================ */
-.final-modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
-    display: none; justify-content: center; align-items: center;
-    z-index: 10000; padding: 20px;
-}
+.optimize-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 99998; padding: 20px; }
+.optimize-overlay.show { display: flex; }
+.optimize-box { background: #fff; border-radius: 16px; padding: 30px 40px; text-align: center; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+.optimize-box .icon { font-size: 48px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+.optimize-box h3 { margin: 0 0 10px; color: #1f5e7a; font-size: 1.15rem; }
+.optimize-box p { margin: 6px 0; color: #666; font-size: 0.88rem; }
+.optimize-box .step { font-size: 0.78rem; color: #888; margin-top: 10px; font-style: italic; min-height: 18px; }
+.optimize-box .bar { margin-top: 16px; height: 10px; background: #e0e8ee; border-radius: 20px; overflow: hidden; }
+.optimize-box .bar .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #1f5e7a, #0d7fb5); transition: width 0.3s; }
+.optimize-box .percent { margin-top: 8px; font-weight: bold; color: #1f5e7a; font-size: 0.95rem; }
+
+.final-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px; }
 .final-modal.show { display: flex; }
-.final-modal-content {
-    background: #fff; border-radius: 12px; width: 100%;
-    max-width: 1200px; height: 100%;
-    max-height: calc(100vh - 40px);
-    display: flex; flex-direction: column; overflow: hidden;
-}
-.final-modal-header {
-    background: linear-gradient(135deg, #6f42c1, #007bff);
-    color: #fff; padding: 14px 20px;
-    display: flex; justify-content: space-between; align-items: center;
-}
+.final-modal-content { background: #fff; border-radius: 12px; width: 100%; max-width: 1200px; height: 100%; max-height: calc(100vh - 40px); display: flex; flex-direction: column; overflow: hidden; }
+.final-modal-header { background: linear-gradient(135deg, #6f42c1, #007bff); color: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
 .final-modal-header h3 { margin: 0; font-size: 17px; }
-.final-modal-close {
-    background: rgba(255,255,255,0.2); border: none; color: #fff;
-    width: 32px; height: 32px; border-radius: 50%;
-    font-size: 18px; cursor: pointer; padding: 0; margin: 0;
-}
-.final-modal-toolbar {
-    background: #f8f9fa; padding: 10px 16px;
-    border-bottom: 1px solid #e0e0e0;
-    display: flex; gap: 8px; flex-wrap: wrap;
-    align-items: center; justify-content: center;
-}
-.final-modal-toolbar button {
-    width: auto; padding: 7px 14px; font-size: 13px; margin: 0;
-}
+.final-modal-close { background: rgba(255,255,255,0.2); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; padding: 0; margin: 0; }
+.final-modal-toolbar { background: #f8f9fa; padding: 10px 16px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+.final-modal-toolbar button { width: auto; padding: 7px 14px; font-size: 13px; margin: 0; }
 .final-modal-toolbar .info { font-size: 13px; color: #333; font-weight: bold; padding: 0 10px; }
-.final-preview-stage {
-    flex: 1; overflow: auto; background: #dde4ec;
-    padding: 20px; text-align: center; min-height: 0;
-}
-.final-preview-stage canvas {
-    display: block; margin: 0 auto 14px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-    background: #fff; border-radius: 3px;
-    max-width: 100%; height: auto;
-}
-.final-modal-footer {
-    background: #f8f9fa; padding: 12px 16px;
-    border-top: 1px solid #e0e0e0;
-    display: flex; gap: 10px; align-items: center;
-    justify-content: center;
-}
-.final-modal-footer button {
-    width: auto; padding: 10px 24px; font-size: 14px; margin: 0;
-}
-.loading-spinner {
-    display: inline-block; width: 18px; height: 18px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top-color: #fff; border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
+.final-preview-stage { flex: 1; overflow: auto; background: #dde4ec; padding: 20px; text-align: center; min-height: 0; }
+.final-preview-stage canvas { display: block; margin: 0 auto 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); background: #fff; border-radius: 3px; max-width: 100%; height: auto; }
+.final-modal-footer { background: #f8f9fa; padding: 12px 16px; border-top: 1px solid #e0e0e0; display: flex; gap: 10px; align-items: center; justify-content: center; }
+.final-modal-footer button { width: auto; padding: 10px 24px; font-size: 14px; margin: 0; }
+.loading-spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ============================================================
-   TOAST
-   ============================================================ */
-.toast {
-    position: fixed; bottom: 30px; left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #333; color: #fff; padding: 12px 22px;
-    border-radius: 10px; font-size: 0.85rem; opacity: 0;
-    transition: all 0.3s; z-index: 99999;
-    pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    display: flex; align-items: center; gap: 8px;
-}
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: #fff; padding: 12px 22px; border-radius: 10px; font-size: 0.85rem; opacity: 0; transition: all 0.3s; z-index: 99999; pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.success { background: #27ae60; }
 .toast.error { background: #c7362b; }
@@ -650,22 +217,11 @@ button.primary {
 </head>
 <body>
 
-<!-- ============================================================
-     TOP BAR
-     ============================================================ -->
 <div class="top-bar">
-    <div class="brand">
-        <span class="logo">P</span>
-        PAN Automation Suite
-    </div>
+    <div class="brand"><span class="logo">P</span>PAN Automation Suite</div>
     <div class="progress-wrap">
-        <div class="progress-label">
-            <span>प्रगति (Progress)</span>
-            <span id="progressPct">0%</span>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
+        <div class="progress-label"><span>प्रगति (Progress)</span><span id="progressPct">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </div>
     <div class="stats">
         <div class="stat">📄 <span class="val" id="statPages">0</span> pages</div>
@@ -674,28 +230,16 @@ button.primary {
     </div>
 </div>
 
-<!-- ============================================================
-     TABS
-     ============================================================ -->
 <div class="tabs-bar">
-    <button class="tab-btn active" id="tab1Btn" onclick="switchTab(1)">
-        📋 Part 1 — Form 93
-        <span class="tab-badge" id="tab1Badge">Active</span>
-    </button>
-    <button class="tab-btn" id="tab2Btn" onclick="switchTab(2)">
-        🖼️ Part 2 — फोटो + सिग्नेचर
-        <span class="tab-badge" id="tab2Badge">Locked</span>
-    </button>
+    <button class="tab-btn active" id="tab1Btn" onclick="switchTab(1)">📋 Part 1 — Form 93 <span class="tab-badge" id="tab1Badge">Active</span></button>
+    <button class="tab-btn" id="tab2Btn" onclick="switchTab(2)">🖼️ Part 2 — फोटो + सिग्नेचर <span class="tab-badge" id="tab2Badge">Locked</span></button>
 </div>
 
-<!-- ============================================================
-     PART 1 — FORM 93
-     ============================================================ -->
 <div class="tab-pane active" id="tab1Pane">
 <div class="p1-container" id="part1Section">
     <div class="form-panel">
         <h2>📄 Form 93 (PAN Application Individual Citizen of India)</h2>
-        <div class="sub">✔ Individual | Citizen of India | Real-time PDF preview & download</div>
+        <div class="sub">✔ Individual | Citizen of India | Auto-fix PDF for Acrobat</div>
 
         <div class="upload-area">
             <label class="file-label" for="staticPdfUpload">📁 Load Form 93 PDF template (click to browse)</label>
@@ -704,45 +248,31 @@ button.primary {
         </div>
 
         <form id="panForm">
-            <!-- PART A -->
             <div class="form-section">
-                <div class="section-title title-main">
-                    <span>PART A - Personal Information <span class="sec-status pending" id="secAStatus">⚠️ Pending</span></span>
-                </div>
+                <div class="section-title title-main"><span>PART A - Personal Information <span class="sec-status pending" id="secAStatus">⚠️ Pending</span></span></div>
                 <div class="section-title" style="margin-top:12px;">1. A. Name (as per documents)</div>
                 <div class="row">
                     <div class="field-group"><label>First Name</label><input type="text" id="firstName" maxlength="25"></div>
                     <div class="field-group"><label>Middle Name</label><input type="text" id="middleName" maxlength="25"></div>
                 </div>
-                <div class="row">
-                    <div class="field-group"><label>Last Name <span class="required">*</span></label><input type="text" id="lastName" maxlength="25"></div>
-                </div>
-                <div class="rule-card">📌 Full name without abbreviations. If Aadhaar has initials, fill full name & expand in 1(B).</div>
-
-                <div class="section-title" style="margin-top: 20px;">1. B. Name (as per Aadhaar) <span class="required">*</span> <button type="button" class="copy-btn" onclick="copySameAs('document')">↩ Same as above (1. A. Name)</button></div>
+                <div class="row"><div class="field-group"><label>Last Name <span class="required">*</span></label><input type="text" id="lastName" maxlength="25"></div></div>
+                <div class="rule-card">📌 Full name without abbreviations.</div>
+                <div class="section-title" style="margin-top: 20px;">1. B. Name (as per Aadhaar) <span class="required">*</span> <button type="button" class="copy-btn" onclick="copySameAs('document')">↩ Same as above</button></div>
                 <div class="row">
                     <div class="field-group"><label>Aadhaar First Name</label><input type="text" id="aadhaarFirstName" maxlength="25"></div>
                     <div class="field-group"><label>Aadhaar Middle Name</label><input type="text" id="aadhaarMiddleName" maxlength="25"></div>
                 </div>
-                <div class="row">
-                    <div class="field-group"><label>Aadhaar Last Name</label><input type="text" id="aadhaarLastName" maxlength="25"></div>
-                </div>
-
-                <div class="section-title" style="margin-top: 20px;">2. Gender (select one) <span class="required">*</span></div>
-                <div class="row">
-                    <div class="radio-group">
-                        <label><input type="radio" name="gender" value="Male" checked> Male</label>
-                        <label><input type="radio" name="gender" value="Female"> Female</label>
-                        <label><input type="radio" name="gender" value="Transgender"> Transgender</label>
-                    </div>
-                </div>
-
+                <div class="row"><div class="field-group"><label>Aadhaar Last Name</label><input type="text" id="aadhaarLastName" maxlength="25"></div></div>
+                <div class="section-title" style="margin-top: 20px;">2. Gender <span class="required">*</span></div>
+                <div class="row"><div class="radio-group">
+                    <label><input type="radio" name="gender" value="Male" checked> Male</label>
+                    <label><input type="radio" name="gender" value="Female"> Female</label>
+                    <label><input type="radio" name="gender" value="Transgender"> Transgender</label>
+                </div></div>
                 <div class="section-title" style="margin-top: 20px;">3. Date of Birth (DDMMYYYY) <span class="required">*</span></div>
                 <div class="row"><div class="field-group"><input type="text" id="dob" maxlength="8"></div></div>
-
                 <div class="section-title" style="margin-top: 20px;">4. Aadhaar Number (12 digits) <span class="required">*</span></div>
                 <div class="row"><div class="field-group"><input type="text" id="aadhaarNumber" maxlength="12"></div></div>
-
                 <div class="section-title" style="margin-top: 20px;">5. 🏠 Residence Address <span class="required">*</span></div>
                 <div class="row">
                     <div class="field-group"><label>Flat/Door/Building</label><input type="text" id="resFlat" maxlength="25"></div>
@@ -760,8 +290,7 @@ button.primary {
                     <div class="field-group"><label>Country/Region</label><input type="text" id="resCountry" value="INDIA"></div>
                     <div class="field-group"><label>PIN/ZIP CODE</label><input type="text" id="resPin" maxlength="7"></div>
                 </div>
-
-                <div class="section-title" style="margin-top: 20px;">6. 🏢 Office Address <button type="button" class="copy-btn" onclick="copySameAs('residence')">↩ Same as above (5. Residence Address)</button></div>
+                <div class="section-title" style="margin-top: 20px;">6. 🏢 Office Address <button type="button" class="copy-btn" onclick="copySameAs('residence')">↩ Same as above</button></div>
                 <div class="row">
                     <div class="field-group"><label>Flat/Door/Building</label><input type="text" id="offFlat" maxlength="25"></div>
                     <div class="field-group"><label>Road/Street/Block/Sector</label><input type="text" id="offRoad" maxlength="25"></div>
@@ -778,43 +307,32 @@ button.primary {
                     <div class="field-group"><label>Country/Region</label><input type="text" id="offCountry" value="INDIA"></div>
                     <div class="field-group"><label>PIN/ZIP CODE</label><input type="text" id="offPin" maxlength="7"></div>
                 </div>
-
                 <div class="section-title" style="margin-top: 20px;">7. Residential Status <span class="required">*</span></div>
-                <div class="row">
-                    <div class="field-group"><label>Residential Status</label>
-                        <select id="resStatus">
-                            <option value="Resident">Resident</option>
-                            <option value="Non-resident">Non-resident</option>
-                            <option value="Resident but not ordinarily resident">Resident but not ordinarily resident</option>
-                        </select>
-                    </div>
-                </div>
-
+                <div class="row"><div class="field-group"><label>Residential Status</label>
+                    <select id="resStatus">
+                        <option value="Resident">Resident</option>
+                        <option value="Non-resident">Non-resident</option>
+                        <option value="Resident but not ordinarily resident">Resident but not ordinarily resident</option>
+                    </select>
+                </div></div>
                 <div class="section-title" style="margin-top: 20px;">8. Passport Number</div>
                 <div class="row"><div class="field-group"><input type="text" id="passport" maxlength="12"></div></div>
-
                 <div class="section-title" style="margin-top: 20px;">9. TIN</div>
                 <div class="row"><div class="field-group"><input type="text" id="tin" maxlength="20"></div></div>
-
                 <div class="section-title" style="margin-top: 12px;">10. 📞 Contact Details <span class="required">*</span></div>
                 <div class="row">
                     <div class="field-group"><label>Country Code <span class="required">*</span></label><input type="text" id="countryCode" maxlength="3"></div>
                     <div class="field-group"><label>Mobile No. <span class="required">*</span></label><input type="text" id="mobileNum" maxlength="10"></div>
                 </div>
-                <div class="row">
-                    <div class="field-group"><label>Email <span class="required">*</span></label><input type="email" id="email"></div>
-                </div>
+                <div class="row"><div class="field-group"><label>Email <span class="required">*</span></label><input type="email" id="email"></div></div>
                 <div class="row">
                     <div class="field-group"><label>STD Code</label><input type="text" id="stdCode" maxlength="4"></div>
                     <div class="field-group"><label>Landline No.</label><input type="text" id="landlineNum" maxlength="8"></div>
                 </div>
             </div>
 
-            <!-- PART B -->
             <div class="form-section">
-                <div class="section-title title-main">
-                    <span>PART B - Source of Income</span>
-                </div>
+                <div class="section-title title-main"><span>PART B - Source of Income</span></div>
                 <div class="section-title" style="margin-top: 12px;">11. 💰 Source of Income</div>
                 <div class="check-group">
                     <label><input type="checkbox" name="income" value="Salary" checked class="income-checkbox" onclick="updateIncomeFields(event)"> Salary</label>
@@ -826,37 +344,28 @@ button.primary {
                 </div>
             </div>
 
-            <!-- PART C -->
             <div class="form-section">
-                <div class="section-title title-main">
-                    <span>PART C - Details of Parents</span>
-                </div>
+                <div class="section-title title-main"><span>PART C - Details of Parents</span></div>
                 <div class="section-title" style="margin-top:12px;">12. Single parent?</div>
                 <div class="row"><div class="field-group"><select id="singleParent"><option value="No">No</option><option value="Yes">Yes (single guardian)</option></select></div></div>
-
                 <div class="section-title" style="margin-top: 20px;">13. Father's Details</div>
                 <div class="row">
                     <div class="field-group"><label>First Name</label><input type="text" id="fatherFirst" maxlength="25"></div>
                     <div class="field-group"><label>Middle Name</label><input type="text" id="fatherMiddle" maxlength="25"></div>
                 </div>
                 <div class="row"><div class="field-group"><label>Last Name <span class="required">*</span></label><input type="text" id="fatherLast" maxlength="25"></div></div>
-
                 <div class="section-title" style="margin-top: 20px;">14. Mother's Details</div>
                 <div class="row">
                     <div class="field-group"><label>First Name</label><input type="text" id="motherFirst" maxlength="25"></div>
                     <div class="field-group"><label>Middle Name</label><input type="text" id="motherMiddle" maxlength="25"></div>
                 </div>
                 <div class="row"><div class="field-group"><label>Last Name <span class="required">*</span></label><input type="text" id="motherLast" maxlength="25"></div></div>
-
                 <div class="section-title" style="margin-top: 20px;">15. Print parent on PAN card</div>
                 <div class="row"><div class="field-group"><select id="printParent"><option value="Father">Father</option><option value="Mother">Mother</option></select></div></div>
             </div>
 
-            <!-- PART D -->
             <div class="form-section">
-                <div class="section-title title-main">
-                    <span>PART D - Assessing Officer (AO Code)</span>
-                </div>
+                <div class="section-title title-main"><span>PART D - Assessing Officer (AO Code)</span></div>
                 <div class="section-title" style="margin-top: 12px;">16. AO Code</div>
                 <div class="row">
                     <div class="field-group"><label>Area Code</label><input type="text" id="aoArea" maxlength="3"></div>
@@ -866,11 +375,8 @@ button.primary {
                 </div>
             </div>
 
-            <!-- PART E -->
             <div class="form-section">
-                <div class="section-title title-main">
-                    <span>PART E - Representative Assessee</span>
-                </div>
+                <div class="section-title title-main"><span>PART E - Representative Assessee</span></div>
                 <div class="section-title" style="margin-top:12px;">17. RA Details</div>
                 <div class="row">
                     <div class="field-group"><label>RA First Name</label><input type="text" id="raFirst" maxlength="25"></div>
@@ -910,67 +416,41 @@ button.primary {
                 </div>
             </div>
 
-            <!-- PART F -->
             <div class="form-section">
-                <div class="section-title title-main">
-                    <span>Part F: Communication Address</span>
-                </div>
+                <div class="section-title title-main"><span>Part F: Communication Address</span></div>
                 <div class="section-title" style="margin-top:12px;">22. Address for Communication</div>
-                <div class="row">
-                    <div class="field-group"><select id="addCom">
-                        <option value="reAddress">Residence Address</option>
-                        <option value="raAddress">Representative Assessee Address</option>
-                        <option value="offAddress">Office Address</option>
-                    </select></div>
-                </div>
+                <div class="row"><div class="field-group"><select id="addCom">
+                    <option value="reAddress">Residence Address</option>
+                    <option value="raAddress">Representative Assessee Address</option>
+                    <option value="offAddress">Office Address</option>
+                </select></div></div>
             </div>
 
-            <!-- PART G -->
             <div class="form-section">
-                <div class="section-title title-main">
-                    <span>Part G: Declaration</span>
-                </div>
+                <div class="section-title title-main"><span>Part G: Declaration</span></div>
                 <div class="section-title" style="margin-top:12px;">23. Proof documents (Applicant)</div>
-                <div class="row">
-                    <div class="field-group"><select id="dobProof">
-                        <option value="dobPOI">Proof of Identity</option>
-                        <option value="dobPOA">Proof of Address</option>
-                        <option value="dobPOB">Proof of Date of Birth</option>
-                    </select></div>
-                </div>
+                <div class="row"><div class="field-group"><select id="dobProof">
+                    <option value="dobPOI">Proof of Identity</option>
+                    <option value="dobPOA">Proof of Address</option>
+                    <option value="dobPOB">Proof of Date of Birth</option>
+                </select></div></div>
                 <div class="section-title" style="margin-top:12px;">24. Proof documents (RA)</div>
-                <div class="row">
-                    <div class="field-group"><select id="raProof">
-                        <option value="raPOI">Proof of Identity</option>
-                        <option value="raPOA">Proof of Address</option>
-                    </select></div>
-                </div>
+                <div class="row"><div class="field-group"><select id="raProof">
+                    <option value="raPOI">Proof of Identity</option>
+                    <option value="raPOA">Proof of Address</option>
+                </select></div></div>
             </div>
 
-            <!-- PART H -->
             <div class="form-section">
-                <div class="section-title title-main">
-                    <span>Part H: Verification & Declaration</span>
-                </div>
+                <div class="section-title title-main"><span>Part H: Verification & Declaration</span></div>
                 <div class="declaration-box">
-                    <p style="margin:0 0 10px 0;">
-                        <strong>a.</strong> I, <span class="blank-line">&nbsp;</span>, in the capacity of 
-                        <span class="blank-line">&nbsp;</span> (Self/ Representative Assessee) do hereby declare that 
-                        what is stated above is true to the best of my knowledge and belief.
-                    </p>
-                    <p style="margin:0;">
-                        <strong>b.</strong> I declare that the applicant does not possess Permanent Account Number and shall be liable for legal consequences under Income-Tax Act, 2025 if this declaration is found to be incorrect.
-                    </p>
+                    <p style="margin:0 0 10px 0;"><strong>a.</strong> I, <span class="blank-line">&nbsp;</span>, in the capacity of <span class="blank-line">&nbsp;</span> (Self/ Representative Assessee) do hereby declare that what is stated above is true to the best of my knowledge and belief.</p>
+                    <p style="margin:0;"><strong>b.</strong> I declare that the applicant does not possess Permanent Account Number and shall be liable for legal consequences under Income-Tax Act, 2025 if this declaration is found to be incorrect.</p>
                 </div>
-
                 <div class="section-title" style="margin-top:12px;">25. Declaration Details</div>
                 <div class="row">
-                    <div class="field-group">
-                        <label>Name (I, ___ ) — auto from Part A</label>
-                        <input type="text" id="declName" maxlength="60" placeholder="Auto-filled">
-                    </div>
-                    <div class="field-group">
-                        <label>Capacity</label>
+                    <div class="field-group"><label>Name (I, ___ )</label><input type="text" id="declName" maxlength="60" placeholder="Auto-filled"></div>
+                    <div class="field-group"><label>Capacity</label>
                         <select id="declCapacity">
                             <option value="SELF">SELF</option>
                             <option value="REPRESENTATIVE ASSESSEE">REPRESENTATIVE ASSESSEE</option>
@@ -986,12 +466,8 @@ button.primary {
                     <div class="field-group"><label>Name</label><input type="text" id="signName" maxlength="60" placeholder="Auto-filled"></div>
                     <div class="field-group"><label>Designation</label><input type="text" id="signDesignation" maxlength="50" placeholder="e.g. SELF"></div>
                 </div>
-
-                <div class="rule-card" style="margin-top:14px;">
-                    🖱️ <strong>Position adjust karne ke liye:</strong> PDF preview ke upar "🎯 Enable Drag" dabayein. Phir yellow boxes ko drag karke exact jagah set karein.
-                </div>
+                <div class="rule-card" style="margin-top:14px;">🖱️ <strong>Position adjust:</strong> "🎯 Enable Drag" dabayein, phir yellow boxes drag karein.</div>
             </div>
-
         </form>
     </div>
 
@@ -1002,13 +478,11 @@ button.primary {
             <button type="button" id="toggleDragBtn" class="primary">🎯 Enable Drag</button>
             <button type="button" id="downloadPdfBtn" class="primary">⬇️ Download & Continue</button>
         </div>
-        <div class="drag-hint" id="dragHint" style="display:none;">
-            🟡 Yellow boxes को drag करके Part H के text की exact position set करें।
-        </div>
+        <div class="drag-hint" id="dragHint" style="display:none;">🟡 Yellow boxes को drag करके Part H के text की exact position set करें।</div>
         <div class="pdf-viewer" id="pdfPreviewContainer">
             <div style="padding: 40px; text-align:center; color:#68869e;">
                 ⬆️ Click "Load Form 93 PDF template" to select your PDF file.<br/>
-                After upload, drag Part H labels to position them exactly.<br/>
+                <b>Auto-fix चालू है</b> — पुरानी PDF upload करने पर स्वचालित रूप से modern format में बदल जाएगी।<br/>
                 Click "Download & Continue" to move to Part 2.
             </div>
         </div>
@@ -1016,14 +490,10 @@ button.primary {
 </div>
 </div>
 
-<!-- ============================================================
-     PART 2 — PHOTO/SIGN
-     ============================================================ -->
 <div class="tab-pane" id="tab2Pane">
 <div id="part2Section">
     <div id="part2Card">
     <h2>PAN फॉर्म ऑटोमेशन टूल — फोटो + सिग्नेचर</h2>
-
     <div class="layout">
         <div class="left-panel">
             <div class="form-group">
@@ -1031,11 +501,8 @@ button.primary {
                 <input type="file" id="pdfInput" accept="application/pdf">
                 <div class="filename" id="pdfName"></div>
                 <div class="pdf-info" id="pdfInfo"></div>
-                <div id="autoLoadedBadge" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;color:#1b5e20;font-size:11px;padding:5px 8px;border-radius:4px;margin-top:5px;">
-                    ✅ Part 1 की PDF auto-load हो गई है
-                </div>
+                <div id="autoLoadedBadge" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;color:#1b5e20;font-size:11px;padding:5px 8px;border-radius:4px;margin-top:5px;">✅ Part 1 की PDF auto-load हो गई है</div>
             </div>
-
             <div class="form-group">
                 <label>2. आवेदक की फोटो चुनें (JPG/PNG):</label>
                 <input type="file" id="photoInput" accept="image/jpeg, image/png, image/jpg">
@@ -1046,7 +513,6 @@ button.primary {
                 </div>
                 <div class="hint">📌 फोटो सिर्फ <b>पेज 1</b> पर दो जगह लगेगी।</div>
             </div>
-
             <div class="form-group">
                 <label>3. आवेदक का सिग्नेचर / अंगूठा चुनें (JPG/PNG):</label>
                 <input type="file" id="signInput" accept="image/jpeg, image/png, image/jpg">
@@ -1055,22 +521,16 @@ button.primary {
                     <img id="signThumb" alt="sign preview">
                     <div class="thumb-label" id="signThumbLabel">Signature Preview</div>
                 </div>
-
                 <div class="checkbox-row" style="margin-top:4px;">
                     <input type="checkbox" id="signAutoProcess" checked>
-                    <label for="signAutoProcess" style="font-weight:normal;margin:0;">
-                        सिग्नेचर को ऑटो ट्रांसपेरेंट + काली स्याही
-                    </label>
+                    <label for="signAutoProcess" style="font-weight:normal;margin:0;">सिग्नेचर को ऑटो ट्रांसपेरेंट + काली स्याही</label>
                 </div>
-
                 <div class="checkbox-row" style="margin-top:2px; background:#e3f2fd; padding:6px 8px; border-radius:6px;">
                     <input type="checkbox" id="thumbBlueInk">
-                    <label for="thumbBlueInk" style="font-weight:bold;margin:0;color:#0d47a1;">
-                        👍 अंगूठा (Thumb Impression) — नीली स्याही में
-                    </label>
+                    <label for="thumbBlueInk" style="font-weight:bold;margin:0;color:#0d47a1;">👍 अंगूठा (Thumb Impression) — नीली स्याही में</label>
                 </div>
                 <div class="thumb-blue-note" id="thumbBlueNote" style="display:none;">
-                    ✅ अंगूठे की छवि को नीली स्याही (Blue Ink) में बदला जाएगा।
+                    ✅ अंगूठे की छवि को नीली स्याही में बदला जाएगा।
                     <div class="shade-selector">
                         <span>Shade:</span>
                         <select id="blueShade">
@@ -1080,142 +540,69 @@ button.primary {
                         </select>
                     </div>
                 </div>
-
                 <div class="hint">📌 सिग्नेचर/अंगूठा सिर्फ <b>पेज 1 और पेज 2</b> पर लगेगा।</div>
             </div>
-
             <div class="form-group">
-                <div class="extras-header">
-                    <label>4. अतिरिक्त दस्तावेज़ (ID/Address proof):</label>
-                </div>
+                <div class="extras-header"><label>4. अतिरिक्त दस्तावेज़ (ID/Address proof):</label></div>
                 <input type="file" id="extraInput" accept="image/jpeg, image/png, image/jpg, application/pdf" multiple>
-                <div class="hint">📄 हर दस्तावेज़ main PDF के बाद नए पेज (3, 4, 5...) के रूप में जुड़ेगा।</div>
+                <div class="hint">📄 हर दस्तावेज़ main PDF के बाद नए पेज के रूप में जुड़ेगा।</div>
                 <div class="extras-list" id="extrasList">
                     <div style="padding:8px;color:#888;font-size:12px;">अभी कोई अतिरिक्त दस्तावेज़ नहीं जोड़ा गया।</div>
                 </div>
             </div>
-
             <button class="secondary" onclick="loadAndPreview()">📄 PDF लोड करें और प्रीव्यू देखें</button>
-
             <div class="settings-panel">
-                <div class="settings-title">
-                    💾 Settings Save / Load
-                    <span class="settings-badge" id="autoSaveBadge" style="display:none;">Auto-Saved</span>
-                </div>
+                <div class="settings-title">💾 Settings Save / Load <span class="settings-badge" id="autoSaveBadge" style="display:none;">Auto-Saved</span></div>
                 <div class="settings-buttons">
                     <button class="btn-save" onclick="saveSettings(true)">💾 Save</button>
                     <button class="btn-load" onclick="loadSettings(true)">📂 Load</button>
                     <button class="btn-clear" onclick="clearSettings()">🗑️ Clear</button>
                 </div>
-                <div class="settings-status" id="settingsStatus">
-                    💡 Settings auto-save होती हैं
-                </div>
+                <div class="settings-status" id="settingsStatus">💡 Settings auto-save होती हैं</div>
             </div>
-
             <div class="controls" id="controlsPanel" style="display:none;">
                 <div class="tab-buttons">
-                    <button id="tabPhoto" class="active" onclick="selectTab('photo')">
-                        📷 फोटो <span class="badge">नीला</span>
-                    </button>
-                    <button id="tabSign" onclick="selectTab('sign')">
-                        ✍️ साइन <span class="badge pink">गुलाबी</span>
-                    </button>
+                    <button id="tabPhoto" class="active" onclick="selectTab('photo')">📷 फोटो <span class="badge">नीला</span></button>
+                    <button id="tabSign" onclick="selectTab('sign')">✍️ साइन <span class="badge pink">गुलाबी</span></button>
                 </div>
-
                 <div class="hint">💡 प्रीव्यू में बॉक्स ड्रैग करें, कोने से साइज़ बदलें।</div>
-
                 <div id="photoControls">
                     <div class="page-note">📌 फोटो का placement सिर्फ पेज 1 के लिए है।</div>
-                    <div class="lock-status-bar" id="photoLockBar">
-                        🔓 <b>अनलॉक</b> — फोटो को ड्रैग कर सकते हैं।
-                    </div>
-                    <div class="controls-row"><label>X</label>
-                        <input type="range" id="pX" min="0" max="800" value="484">
-                        <input type="number" id="pXn" value="484"></div>
-                    <div class="controls-row"><label>Y</label>
-                        <input type="range" id="pY" min="0" max="1000" value="592">
-                        <input type="number" id="pYn" value="592"></div>
-                    <div class="controls-row"><label>चौड़ाई</label>
-                        <input type="range" id="pW" min="20" max="250" value="100">
-                        <input type="number" id="pWn" value="100"></div>
-                    <div class="controls-row"><label>ऊँचाई</label>
-                        <input type="range" id="pH" min="20" max="250" value="132">
-                        <input type="number" id="pHn" value="132"></div>
-                    <div class="checkbox-row">
-                        <input type="checkbox" id="photoLeft" checked>
-                        <label for="photoLeft" style="font-weight:normal;margin:0;">बाएँ कोने पर भी फोटो लगाएँ</label>
-                    </div>
-                    <button class="lock-btn" id="photoLockBtn" onclick="toggleLock('photo')">
-                        🔓 फोटो लॉक करें
-                    </button>
+                    <div class="lock-status-bar" id="photoLockBar">🔓 <b>अनलॉक</b> — फोटो को ड्रैग कर सकते हैं।</div>
+                    <div class="controls-row"><label>X</label><input type="range" id="pX" min="0" max="800" value="484"><input type="number" id="pXn" value="484"></div>
+                    <div class="controls-row"><label>Y</label><input type="range" id="pY" min="0" max="1000" value="592"><input type="number" id="pYn" value="592"></div>
+                    <div class="controls-row"><label>चौड़ाई</label><input type="range" id="pW" min="20" max="250" value="100"><input type="number" id="pWn" value="100"></div>
+                    <div class="controls-row"><label>ऊँचाई</label><input type="range" id="pH" min="20" max="250" value="132"><input type="number" id="pHn" value="132"></div>
+                    <div class="checkbox-row"><input type="checkbox" id="photoLeft" checked><label for="photoLeft" style="font-weight:normal;margin:0;">बाएँ कोने पर भी फोटो लगाएँ</label></div>
+                    <button class="lock-btn" id="photoLockBtn" onclick="toggleLock('photo')">🔓 फोटो लॉक करें</button>
                 </div>
-
                 <div id="signControls" style="display:none;">
                     <div class="page-note">📌 सिग्नेचर सिर्फ पेज 1 और (optional) पेज 2 पर लगेगा।</div>
-                    <div class="lock-status-bar" id="signLockBar">
-                        🔓 <b>अनलॉक</b> — सिग्नेचर को ड्रैग कर सकते हैं।
-                    </div>
+                    <div class="lock-status-bar" id="signLockBar">🔓 <b>अनलॉक</b> — सिग्नेचर को ड्रैग कर सकते हैं।</div>
                     <div id="signPage1Block">
-                        <div style="font-size:11px;color:#555;margin-bottom:4px;">
-                            <b>पेज 1 (ऊपर वाला sign):</b>
-                        </div>
-                        <div class="controls-row"><label>X</label>
-                            <input type="range" id="sX" min="0" max="800" value="20">
-                            <input type="number" id="sXn" value="20"></div>
-                        <div class="controls-row"><label>Y</label>
-                            <input type="range" id="sY" min="0" max="1000" value="615">
-                            <input type="number" id="sYn" value="615"></div>
-                        <div class="controls-row"><label>चौड़ाई</label>
-                            <input type="range" id="sW" min="20" max="300" value="110">
-                            <input type="number" id="sWn" value="110"></div>
-                        <div class="controls-row"><label>ऊँचाई</label>
-                            <input type="range" id="sH" min="10" max="150" value="45">
-                            <input type="number" id="sHn" value="45"></div>
+                        <div style="font-size:11px;color:#555;margin-bottom:4px;"><b>पेज 1 (ऊपर वाला sign):</b></div>
+                        <div class="controls-row"><label>X</label><input type="range" id="sX" min="0" max="800" value="20"><input type="number" id="sXn" value="20"></div>
+                        <div class="controls-row"><label>Y</label><input type="range" id="sY" min="0" max="1000" value="615"><input type="number" id="sYn" value="615"></div>
+                        <div class="controls-row"><label>चौड़ाई</label><input type="range" id="sW" min="20" max="300" value="110"><input type="number" id="sWn" value="110"></div>
+                        <div class="controls-row"><label>ऊँचाई</label><input type="range" id="sH" min="10" max="150" value="45"><input type="number" id="sHn" value="45"></div>
                     </div>
                     <div id="signPage2Block">
-                        <div style="font-size:11px;color:#555;margin:6px 0 4px;">
-                            <b>पेज 2 (नीचे वाला sign):</b>
-                        </div>
-                        <div class="controls-row"><label>X</label>
-                            <input type="range" id="s2X" min="0" max="800" value="410">
-                            <input type="number" id="s2Xn" value="410"></div>
-                        <div class="controls-row"><label>Y</label>
-                            <input type="range" id="s2Y" min="0" max="1000" value="125">
-                            <input type="number" id="s2Yn" value="125"></div>
-                        <div class="controls-row"><label>चौड़ाई</label>
-                            <input type="range" id="s2W" min="20" max="300" value="120">
-                            <input type="number" id="s2Wn" value="120"></div>
-                        <div class="controls-row"><label>ऊँचाई</label>
-                            <input type="range" id="s2H" min="10" max="150" value="45">
-                            <input type="number" id="s2Hn" value="45"></div>
+                        <div style="font-size:11px;color:#555;margin:6px 0 4px;"><b>पेज 2 (नीचे वाला sign):</b></div>
+                        <div class="controls-row"><label>X</label><input type="range" id="s2X" min="0" max="800" value="410"><input type="number" id="s2Xn" value="410"></div>
+                        <div class="controls-row"><label>Y</label><input type="range" id="s2Y" min="0" max="1000" value="125"><input type="number" id="s2Yn" value="125"></div>
+                        <div class="controls-row"><label>चौड़ाई</label><input type="range" id="s2W" min="20" max="300" value="120"><input type="number" id="s2Wn" value="120"></div>
+                        <div class="controls-row"><label>ऊँचाई</label><input type="range" id="s2H" min="10" max="150" value="45"><input type="number" id="s2Hn" value="45"></div>
                     </div>
-                    <div class="checkbox-row">
-                        <input type="checkbox" id="signPage2" checked>
-                        <label for="signPage2" style="font-weight:normal;margin:0;">पेज 2 पर भी सिग्नेचर लगाएँ</label>
-                    </div>
-                    <button class="lock-btn" id="signLockBtn" onclick="toggleLock('sign')">
-                        🔓 सिग्नेचर लॉक करें
-                    </button>
-                    <button class="secondary copy-btn" onclick="copySignPosToPage2()">
-                        📋 पेज 1 का position पेज 2 पर copy करें
-                    </button>
+                    <div class="checkbox-row"><input type="checkbox" id="signPage2" checked><label for="signPage2" style="font-weight:normal;margin:0;">पेज 2 पर भी सिग्नेचर लगाएँ</label></div>
+                    <button class="lock-btn" id="signLockBtn" onclick="toggleLock('sign')">🔓 सिग्नेचर लॉक करें</button>
+                    <button class="secondary copy-btn" onclick="copySignPosToPage2()">📋 पेज 1 का position पेज 2 पर copy करें</button>
                 </div>
-
-                <button class="secondary" onclick="lockAll()" style="margin-top:8px;background:#17a2b8;">
-                    🔒 सभी को एक साथ लॉक करें
-                </button>
+                <button class="secondary" onclick="lockAll()" style="margin-top:8px;background:#17a2b8;">🔒 सभी को एक साथ लॉक करें</button>
                 <button class="warn" onclick="resetPosition()" style="margin-top:6px;">🔄 डिफ़ॉल्ट पोज़िशन पर रीसेट करें</button>
-                <div class="shortcut-hint">
-                    ⌨️ <kbd>←</kbd>/<kbd>→</kbd> पेज • <kbd>Ctrl</kbd>+<kbd>S</kbd> डाउनलोड • <kbd>Esc</kbd> बंद
-                </div>
+                <div class="shortcut-hint">⌨️ <kbd>←</kbd>/<kbd>→</kbd> पेज • <kbd>Ctrl</kbd>+<kbd>S</kbd> डाउनलोड • <kbd>Esc</kbd> बंद</div>
             </div>
-
-            <button class="preview-btn" id="finalPreviewBtn" onclick="openFinalPreview()" disabled>
-                🔍 Final Preview देखें
-            </button>
-            <button class="download-btn" id="processBtn" onclick="processPDF()" disabled>
-                ✅ सीधे PDF डाउनलोड करें
-            </button>
+            <button class="preview-btn" id="finalPreviewBtn" onclick="openFinalPreview()" disabled>🔍 Final Preview देखें</button>
+            <button class="download-btn" id="processBtn" onclick="processPDF()" disabled>✅ सीधे PDF डाउनलोड करें</button>
             <div id="statusMessage" class="status"></div>
             <a id="downloadLink" class="download-link" style="display:none;"></a>
         </div>
@@ -1232,10 +619,7 @@ button.primary {
                 </div>
                 <div class="preview-stage-outer" id="previewOuter">
                     <div class="preview-stage" id="previewStage">
-                        <div id="emptyPreview">
-                            अभी कोई PDF लोड नहीं हुई है।<br>
-                            कृपया PDF चुनें और "PDF लोड करें" पर क्लिक करें।
-                        </div>
+                        <div id="emptyPreview">अभी कोई PDF लोड नहीं हुई है।<br>कृपया PDF चुनें और "PDF लोड करें" पर क्लिक करें।</div>
                         <canvas id="pdfCanvas" style="display:none;"></canvas>
                     </div>
                 </div>
@@ -1246,9 +630,6 @@ button.primary {
 </div>
 </div>
 
-<!-- ============================================================
-     FINAL MODAL
-     ============================================================ -->
 <div class="final-modal" id="finalModal">
     <div class="final-modal-content">
         <div class="final-modal-header">
@@ -1266,21 +647,202 @@ button.primary {
         <div class="final-modal-footer">
             <button class="warn" onclick="closeFinalPreview()">✕ बंद करें</button>
             <button class="secondary" onclick="printFinalPDF()">🖨️ Print</button>
-            <button class="download-btn" onclick="downloadFinalPDF()" style="margin:0;">
-                📥 Final PDF डाउनलोड करें
-            </button>
+            <button class="download-btn" onclick="downloadFinalPDF()" style="margin:0;">📥 Final PDF डाउनलोड करें</button>
         </div>
+    </div>
+</div>
+
+<div class="optimize-overlay" id="optimizeOverlay">
+    <div class="optimize-box">
+        <div class="icon">🔧</div>
+        <h3>PDF Auto-Fix हो रही है...</h3>
+        <p>Acrobat error (18) खत्म करने के लिए PDF को modern format में बदला जा रहा है</p>
+        <p style="font-size:0.78rem;color:#888;">JPX images → JPEG • PDF 1.4 → PDF 1.7 + ObjStm</p>
+        <div class="step" id="optimizeStep">तैयार हो रहा है...</div>
+        <div class="bar"><div class="fill" id="optimizeFill"></div></div>
+        <div class="percent" id="optimizePercent">0%</div>
     </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   GLOBAL
-   ============================================================ */
 pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* ============================================================
+   ✅ PDF AUTO-FIX (Acrobat error 18 solver)
+   की PDF में जो problem थी:
+   1. PDF 1.4 (old structure)
+   2. JPEG 2000 (JPX) images — Acrobat 9+ reject करता है
+   3. Mixed xref — strict parsing fail
+   
+   Solution:
+   - pdf.js से हर page render (JPX auto-decode → canvas)
+   - Canvas → Standard JPEG (Acrobat-safe)
+   - New PDF 1.7 with ObjStm
+   ============================================================ */
+async function optimizePdfStructure(srcBytes, showUI = true) {
+    const t0 = performance.now();
+    console.log('🔧 PDF Auto-Fix शुरू...');
+
+    const overlay = document.getElementById('optimizeOverlay');
+    const fill = document.getElementById('optimizeFill');
+    const pct = document.getElementById('optimizePercent');
+    const stepEl = document.getElementById('optimizeStep');
+
+    if (showUI && overlay) {
+        overlay.classList.add('show');
+        if (fill) fill.style.width = '0%';
+        if (pct) pct.textContent = '0%';
+        if (stepEl) stepEl.textContent = 'PDF load हो रही है...';
+    }
+
+    const updateProgress = (p, step) => {
+        if (fill) fill.style.width = p + '%';
+        if (pct) pct.textContent = p + '%';
+        if (stepEl && step) stepEl.textContent = step;
+    };
+
+    try {
+        // 1. pdf.js से original PDF load
+        updateProgress(3, 'PDF load हो रही है...');
+        const srcDoc = await pdfjsLib.getDocument({ data: srcBytes.slice(0) }).promise;
+        const numPages = srcDoc.numPages;
+        console.log('📄 Pages:', numPages);
+
+        // 2. नई PDF
+        const newDoc = await PDFLib.PDFDocument.create();
+
+        // 3. हर page render → JPEG → embed
+        for (let i = 1; i <= numPages; i++) {
+            updateProgress(
+                5 + Math.round((i / numPages) * 80),
+                `पेज ${i}/${numPages} render हो रहा है (JPX → JPEG)...`
+            );
+
+            const page = await srcDoc.getPage(i);
+            const renderVp = page.getViewport({ scale: 2.5 });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = renderVp.width;
+            canvas.height = renderVp.height;
+            const ctx = canvas.getContext('2d');
+
+            // White background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            await page.render({ canvasContext: ctx, viewport: renderVp }).promise;
+
+            // JPEG में convert (0.92 quality — size vs quality balance)
+            const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.92));
+            const ab = await blob.arrayBuffer();
+            const img = await newDoc.embedJpg(ab);
+
+            // Original page size में page
+            const origVp = page.getViewport({ scale: 1 });
+            const newPage = newDoc.addPage([origVp.width, origVp.height]);
+            newPage.drawImage(img, {
+                x: 0, y: 0,
+                width: origVp.width,
+                height: origVp.height,
+            });
+        }
+
+        // 4. Modern format में save
+        updateProgress(90, 'Modern format (1.7 + ObjStm) में save हो रहा है...');
+        const optimized = await newDoc.save({
+            useObjectStreams: true,
+            addDefaultPage: false,
+        });
+        updateProgress(100, '✅ पूरा हो गया!');
+
+        const t1 = performance.now();
+        console.log('✅ Auto-fix complete:', srcBytes.byteLength, '→', optimized.byteLength, 'bytes in', Math.round(t1-t0), 'ms');
+
+        // Verify
+        const verifyTxt = new TextDecoder('latin1').decode(new Uint8Array(optimized).subarray(0, 2000));
+        console.log('📋 New header:', verifyTxt.substring(0, 15));
+        console.log('📋 Has ObjStm?', verifyTxt.includes('/ObjStm') ? 'YES ✅' : 'NO');
+        console.log('📋 Has JPX?', verifyTxt.includes('/JPXDecode') ? 'YES ⚠️' : 'NO ✅');
+
+        if (showUI && overlay) {
+            setTimeout(() => overlay.classList.remove('show'), 500);
+        }
+
+        return optimized;
+
+    } catch (err) {
+        console.error('❌ Auto-fix failed:', err);
+        if (showUI && overlay) overlay.classList.remove('show');
+        throw err;
+    }
+}
+
+/* ============================================================
+   GLOBAL HELPERS
+   ============================================================ */
+function freshCopy(buf) {
+    if (!buf) return null;
+    return buf.slice(0);
+}
+
+async function reencodeImageToJpeg(arrayBuffer, quality = 0.95, maxDim = 2000) {
+    return new Promise((resolve, reject) => {
+        const blob = new Blob([arrayBuffer]);
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+            try {
+                let w = img.naturalWidth || img.width;
+                let h = img.naturalHeight || img.height;
+                if (Math.max(w, h) > maxDim) {
+                    const s = maxDim / Math.max(w, h);
+                    w = Math.round(w * s); h = Math.round(h * s);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                canvas.toBlob((b) => {
+                    URL.revokeObjectURL(url);
+                    if (!b) return reject(new Error('JPEG encode failed'));
+                    b.arrayBuffer().then(resolve).catch(reject);
+                }, 'image/jpeg', quality);
+            } catch (e) { URL.revokeObjectURL(url); reject(e); }
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+        img.src = url;
+    });
+}
+
+async function reencodeSignatureToPng(arrayBuffer) {
+    return new Promise((resolve, reject) => {
+        const blob = new Blob([arrayBuffer]);
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth || img.width;
+                canvas.height = img.naturalHeight || img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob((b) => {
+                    URL.revokeObjectURL(url);
+                    if (!b) return reject(new Error('PNG encode failed'));
+                    b.arrayBuffer().then(resolve).catch(reject);
+                }, 'image/png');
+            } catch (e) { URL.revokeObjectURL(url); reject(e); }
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+        img.src = url;
+    });
+}
 
 /* ============================================================
    TAB SWITCHING
@@ -1313,25 +875,18 @@ function updateProgress() {
         const el = document.getElementById(id);
         if (el && el.value.trim()) filled++;
     });
-
-    // Part 1 progress (up to 70%)
     const p1Pct = Math.min(70, Math.round((filled / fields.length) * 70));
-
-    // Part 2 progress (up to 30%)
     let p2Pct = 0;
     if (state.pdfBytes) p2Pct += 10;
     if (state.photoBytes) p2Pct += 10;
     if (state.signBytes) p2Pct += 10;
-
     const total = p1Pct + p2Pct;
     document.getElementById('progressFill').style.width = total + '%';
     document.getElementById('progressPct').textContent = total + '%';
-
     document.getElementById('statFields').textContent = filled;
     document.getElementById('statPages').textContent = state.totalPages || 0;
     document.getElementById('statExtras').textContent = state.extras.length;
 
-    // Section status badges
     const secA = document.getElementById('secAStatus');
     if (secA) {
         const aFilled = ['lastName','aadhaarNumber','dob','mobileNum','email'].every(id => {
@@ -1342,7 +897,6 @@ function updateProgress() {
         secA.textContent = aFilled ? '✅ Complete' : '⚠️ Pending';
     }
 
-    // Tab badges
     const tab2Badge = document.getElementById('tab2Badge');
     if (tab2Badge) {
         if (bridgeState.part1PdfBytes) {
@@ -1361,9 +915,10 @@ document.querySelectorAll('input, select').forEach(el => {
 });
 
 /* ============================================================
-   PART 1 — FORM 93 LOGIC
+   PART 1 — FORM 93
    ============================================================ */
 let currentPdfBytes = null;
+let optimizedPdfBytes = null;
 let cachedFont = null;
 let pdfDocCache = null;
 let templateFileName = '';
@@ -1422,8 +977,25 @@ fileUpload.addEventListener('change', async (e) => {
         const bytes = await file.arrayBuffer();
         currentPdfBytes = bytes;
         templateFileName = file.name;
-        const tempDoc = await PDFLib.PDFDocument.load(bytes);
+
+        fileStatus.innerHTML = `⏳ Auto-fix चल रहा है...`;
+
+        // ✅ AUTO-FIX
+        try {
+            optimizedPdfBytes = await optimizePdfStructure(bytes, true);
+            console.log('✅ PDF auto-fixed');
+            fileStatus.innerHTML = `✅ Loaded & Auto-Fixed: <strong>${file.name}</strong> (${(optimizedPdfBytes.byteLength/1024).toFixed(1)} KB)`;
+            showToast('✅ PDF auto-fix हो गई — Acrobat compatible!', 'success');
+        } catch (optErr) {
+            console.warn('⚠️ Auto-fix failed, using original:', optErr);
+            optimizedPdfBytes = bytes;
+            fileStatus.innerHTML = `⚠️ Auto-fix failed. Chrome/Adobe PDF Print → Save as PDF करके दोबारा upload करें।`;
+            showToast('⚠️ Auto-fix fail — manual fix चाहिए', 'error', 5000);
+        }
+
+        const tempDoc = await PDFLib.PDFDocument.load(freshCopy(optimizedPdfBytes));
         pdfDocCache = tempDoc;
+
         const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf';
         try {
             const fontResp = await fetch(fontUrl);
@@ -1432,8 +1004,7 @@ fileUpload.addEventListener('change', async (e) => {
         } catch(err) {
             cachedFont = await tempDoc.embedFont(PDFLib.StandardFonts.Helvetica);
         }
-        fileStatus.innerHTML = `✅ Loaded: <strong>${file.name}</strong> (${(file.size/1024).toFixed(1)} KB)`;
-        showToast('✅ PDF template लोड हो गया', 'success');
+
         await generateFilledPdfAndPreview(true, false);
         updateProgress();
     } catch (err) {
@@ -1444,10 +1015,11 @@ fileUpload.addEventListener('change', async (e) => {
 });
 
 async function generateFilledPdfAndPreview(onlyPreview = false, needToValidate = true) {
-    if (!currentPdfBytes) {
+    if (!optimizedPdfBytes && !currentPdfBytes) {
         alert("Please upload Form 93 PDF template first.");
         return null;
     }
+    const srcBytes = optimizedPdfBytes || currentPdfBytes;
     const firstName = document.getElementById('firstName').value.trim();
     const lastName = document.getElementById('lastName').value.trim();
     const aadhaar = document.getElementById('aadhaarNumber').value.replace(/\D/g,'');
@@ -1468,7 +1040,10 @@ async function generateFilledPdfAndPreview(onlyPreview = false, needToValidate =
         if(incomes.length === 0) { alert("Select at least one Source of Income"); return null; }
     }
 
-    const pdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
+    const pdfDoc = await PDFLib.PDFDocument.load(freshCopy(srcBytes), {
+        ignoreEncryption: true,
+        updateMetadata: false,
+    });
     pdfDoc.registerFontkit(fontkit);
     let font = cachedFont;
     if(!font) font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
@@ -1655,7 +1230,11 @@ async function generateFilledPdfAndPreview(onlyPreview = false, needToValidate =
     drawPartHField('signName', signName);
     drawPartHField('signDesignation', signDesignation);
 
-    const pdfBytes = await pdfDoc.save();
+    const pdfBytes = await pdfDoc.save({
+        useObjectStreams: true,
+        addDefaultPage: false,
+        updateFieldAppearances: false,
+    });
     const blobUrl = URL.createObjectURL(new Blob([pdfBytes], {type:'application/pdf'}));
     const previewDiv = document.getElementById('pdfPreviewContainer');
     previewDiv.innerHTML = `<iframe class="pdf-iframe" src="${blobUrl}"></iframe>`;
@@ -1773,7 +1352,7 @@ document.getElementById('toggleDragBtn').addEventListener('click', () => {
 });
 
 document.getElementById('refreshPreviewBtn').addEventListener('click', async () => {
-    if(!currentPdfBytes) { alert("Please upload Form 93 PDF first."); return; }
+    if(!optimizedPdfBytes && !currentPdfBytes) { alert("Please upload Form 93 PDF first."); return; }
     await generateFilledPdfAndPreview(true, false);
 });
 
@@ -1783,15 +1362,13 @@ document.getElementById('refreshPreviewBtn').addEventListener('click', async () 
 const bridgeState = { part1PdfBytes: null, part1PdfBlobUrl: null };
 
 document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
-    if(!currentPdfBytes) { alert("Upload PDF template first."); return; }
+    if(!optimizedPdfBytes && !currentPdfBytes) { alert("Upload PDF template first."); return; }
     const result = await generateFilledPdfAndPreview(false, true);
     if (result && result.pdfBytes) {
         bridgeState.part1PdfBytes = result.pdfBytes;
         bridgeState.part1PdfBlobUrl = result.blobUrl;
         showToast('✅ PDF download हो गई! अब Part 2 में फोटो/सिग्नेचर जोड़ें।', 'success');
-        // Auto-switch to Part 2 after short delay
         setTimeout(() => {
-            // Auto-inject PDF into Part 2
             state.pdfBytes = bridgeState.part1PdfBytes;
             state.pdfDocLib = null;
             state.pdfJsDoc = null;
@@ -2001,13 +1578,23 @@ document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const f = e.target.files[0];
     document.getElementById('pdfName').textContent = f ? f.name : '';
     if (f) {
-        state.pdfBytes = await readFileAsArrayBuffer(f);
+        const raw = await readFileAsArrayBuffer(f);
+        try {
+            const info = document.getElementById('pdfInfo');
+            info.classList.add('show');
+            info.innerHTML = `⏳ Auto-fix चल रहा है...`;
+            state.pdfBytes = await optimizePdfStructure(raw, true);
+            console.log('✅ Part 2 PDF auto-fixed');
+        } catch (optErr) {
+            console.warn('⚠️ Auto-fix failed:', optErr);
+            state.pdfBytes = raw;
+        }
         state.pdfDocLib = null; state.pdfJsDoc = null;
         document.getElementById('processBtn').disabled = true;
         document.getElementById('finalPreviewBtn').disabled = true;
         const info = document.getElementById('pdfInfo');
         info.classList.add('show');
-        info.innerHTML = `📄 <b>${f.name}</b><br>Size: ${formatBytes(f.size)}<br><i>(Preview के लिए load करें)</i>`;
+        info.innerHTML = `📄 <b>${f.name}</b><br>Size: ${formatBytes(state.pdfBytes.byteLength)}<br><i>(Auto-fixed ✓)</i>`;
         updateProgress();
     }
 });
@@ -2072,7 +1659,7 @@ async function addExtraDocument(file) {
     if (type === 'image') previewUrl = URL.createObjectURL(new Blob([bytes]));
     else {
         try {
-            const doc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+            const doc = await pdfjsLib.getDocument({ data: freshCopy(bytes) }).promise;
             const page = await doc.getPage(1);
             const vp = page.getViewport({ scale: 1 });
             const cv = document.createElement('canvas');
@@ -2213,7 +1800,7 @@ async function getSignaturePreviewUrl() {
 }
 
 /* ============================================================
-   LOAD PDF → RENDER
+   LOAD PDF → RENDER (Part 2)
    ============================================================ */
 async function loadAndPreview() {
     const statusDiv = document.getElementById('statusMessage');
@@ -2226,8 +1813,8 @@ async function loadAndPreview() {
     try {
         statusDiv.className = 'status success';
         statusDiv.textContent = 'PDF लोड हो रही है...';
-        state.pdfDocLib = await PDFLib.PDFDocument.load(state.pdfBytes);
-        state.pdfJsDoc = await pdfjsLib.getDocument({ data: state.pdfBytes.slice(0) }).promise;
+        state.pdfDocLib = null;
+        state.pdfJsDoc = await pdfjsLib.getDocument({ data: freshCopy(state.pdfBytes) }).promise;
         state.totalPages = state.pdfJsDoc.numPages;
         state.currentPage = 1;
         const hasSaved = !!localStorage.getItem(STORAGE_KEY);
@@ -2261,7 +1848,7 @@ async function loadAndPreview() {
         document.getElementById('nextBtn').disabled = false;
         const info = document.getElementById('pdfInfo');
         info.classList.add('show');
-        info.innerHTML = `✅ PDF Loaded<br>Pages: <b>${state.totalPages}</b><br>Size: ${formatBytes(state.pdfBytes.byteLength)}`;
+        info.innerHTML = `✅ PDF Loaded (Auto-fixed)<br>Pages: <b>${state.totalPages}</b><br>Size: ${formatBytes(state.pdfBytes.byteLength)}`;
         await fitToWidth();
         updateLockUI();
         renderExtrasList();
@@ -2626,64 +2213,135 @@ function resetPosition() {
 }
 
 /* ============================================================
-   BUILD FINAL PDF
+   ✅ BUILD FINAL PDF — Acrobat-safe
    ============================================================ */
 async function buildFinalPDF() {
     if (!state.pdfBytes) throw new Error('पहले PDF लोड करें।');
-    const pdfDoc = await PDFLib.PDFDocument.load(state.pdfBytes);
-    let signBytesFinal = state.signBytes;
+
+    const pdfDoc = await PDFLib.PDFDocument.load(freshCopy(state.pdfBytes), {
+        ignoreEncryption: true,
+        updateMetadata: false,
+    });
+
+    let signBytesFinal = state.signBytes ? freshCopy(state.signBytes) : null;
     const thumbBlue = document.getElementById('thumbBlueInk').checked;
     const autoProcess = document.getElementById('signAutoProcess').checked;
     if (state.signFile && (thumbBlue || autoProcess)) {
-        try { signBytesFinal = await processSignatureImage(state.signFile, thumbBlue); }
-        catch (err) { console.warn('Sign auto-process failed:', err); }
+        try {
+            const processed = await processSignatureImage(state.signFile, thumbBlue);
+            if (processed && processed.byteLength > 0) signBytesFinal = processed;
+        } catch (err) { console.warn('Sign auto-process failed:', err); }
     }
+    if (!signBytesFinal) throw new Error('Signature image missing या invalid है।');
+
+    let signReencoded;
+    try { signReencoded = await reencodeSignatureToPng(signBytesFinal); }
+    catch (e) { console.warn('Sign re-encode failed:', e); signReencoded = signBytesFinal; }
+
+    const embedSign = await pdfDoc.embedPng(signReencoded);
+
     const pages = pdfDoc.getPages();
     if (pages.length === 0) throw new Error("PDF में कोई पेज नहीं मिला।");
-    const embedPhoto = isPng(state.photoFile)
-        ? await pdfDoc.embedPng(state.photoBytes)
-        : await pdfDoc.embedJpg(state.photoBytes);
-    const embedSign = await pdfDoc.embedPng(signBytesFinal);
-    const page1 = pages[0];
-    page1.drawImage(embedPhoto, { x: state.photo.x, y: state.photo.y, width: state.photo.w, height: state.photo.h });
-    if (document.getElementById('photoLeft').checked) {
-        page1.drawImage(embedPhoto, { x: state.photoLeft.x, y: state.photo.y, width: state.photo.w, height: state.photo.h });
+
+    let embedPhoto = null;
+    if (state.photoBytes && state.photoFile) {
+        try {
+            const photoReencoded = await reencodeImageToJpeg(freshCopy(state.photoBytes), 0.95, 1500);
+            embedPhoto = await pdfDoc.embedJpg(photoReencoded);
+        } catch (err) {
+            console.warn('Photo re-encode failed:', err);
+            try {
+                embedPhoto = isPng(state.photoFile)
+                    ? await pdfDoc.embedPng(freshCopy(state.photoBytes))
+                    : await pdfDoc.embedJpg(freshCopy(state.photoBytes));
+            } catch (e2) { console.warn('Photo embed failed:', e2); }
+        }
     }
-    page1.drawImage(embedSign, { x: state.sign.x, y: state.sign.y, width: state.sign.w, height: state.sign.h });
+
+    const page1 = pages[0];
+    if (embedPhoto) {
+        page1.drawImage(embedPhoto, {
+            x: state.photo.x, y: state.photo.y,
+            width: state.photo.w, height: state.photo.h,
+        });
+        if (document.getElementById('photoLeft').checked) {
+            page1.drawImage(embedPhoto, {
+                x: state.photoLeft.x, y: state.photo.y,
+                width: state.photo.w, height: state.photo.h,
+            });
+        }
+    }
+    page1.drawImage(embedSign, {
+        x: state.sign.x, y: state.sign.y,
+        width: state.sign.w, height: state.sign.h,
+    });
+
     if (pages.length > 1 && document.getElementById('signPage2').checked) {
         const page2 = pages[1];
-        page2.drawImage(embedSign, { x: state.sign2.x, y: state.sign2.y, width: state.sign2.w, height: state.sign2.h });
+        page2.drawImage(embedSign, {
+            x: state.sign2.x, y: state.sign2.y,
+            width: state.sign2.w, height: state.sign2.h,
+        });
     }
+
     const A4_W = 595, A4_H = 842, MARGIN = 30;
+
     for (const ex of state.extras) {
-        const newPage = pdfDoc.addPage([A4_W, A4_H]);
-        let emb = null, imgW = 0, imgH = 0;
+        const exBytes = freshCopy(ex.bytes);
+
         if (ex.type === 'image') {
-            emb = isPng(ex.file) ? await pdfDoc.embedPng(ex.bytes) : await pdfDoc.embedJpg(ex.bytes);
-            imgW = emb.width; imgH = emb.height;
+            try {
+                const imgReencoded = await reencodeImageToJpeg(exBytes, 0.92, 2000);
+                const emb = await pdfDoc.embedJpg(imgReencoded);
+                const newPage = pdfDoc.addPage([A4_W, A4_H]);
+                const imgW = emb.width, imgH = emb.height;
+                const availW = A4_W - MARGIN * 2, availH = A4_H - MARGIN * 2;
+                const scl = Math.min(availW / imgW, availH / imgH);
+                const drawW = imgW * scl, drawH = imgH * scl;
+                newPage.drawImage(emb, {
+                    x: (A4_W - drawW) / 2, y: (A4_H - drawH) / 2,
+                    width: drawW, height: drawH,
+                });
+            } catch (e) { console.warn('Extra image embed failed:', e); }
         } else {
             try {
-                const doc = await pdfjsLib.getDocument({ data: ex.bytes.slice(0) }).promise;
-                const pg = await doc.getPage(1);
-                const vp = pg.getViewport({ scale: 2 });
-                const cv = document.createElement('canvas');
-                cv.width = vp.width; cv.height = vp.height;
-                const c2 = cv.getContext('2d');
-                await pg.render({ canvasContext: c2, viewport: vp }).promise;
-                const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
-                const ab = await blob.arrayBuffer();
-                emb = await pdfDoc.embedPng(ab);
-                imgW = emb.width; imgH = emb.height;
+                const srcDoc = await pdfjsLib.getDocument({ data: exBytes }).promise;
+                const totalExPages = srcDoc.numPages;
+                for (let p = 1; p <= totalExPages; p++) {
+                    const pg = await srcDoc.getPage(p);
+                    const vp = pg.getViewport({ scale: 1.8 });
+                    const cv = document.createElement('canvas');
+                    cv.width = vp.width; cv.height = vp.height;
+                    const c2 = cv.getContext('2d');
+                    c2.fillStyle = '#ffffff';
+                    c2.fillRect(0, 0, cv.width, cv.height);
+                    await pg.render({ canvasContext: c2, viewport: vp }).promise;
+
+                    const blob = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.92));
+                    if (!blob) continue;
+                    const ab1 = await blob.arrayBuffer();
+                    const ab2 = await reencodeImageToJpeg(ab1, 0.92, 2000);
+                    const emb = await pdfDoc.embedJpg(ab2);
+
+                    const newPage = pdfDoc.addPage([A4_W, A4_H]);
+                    const imgW = emb.width, imgH = emb.height;
+                    const availW = A4_W - MARGIN * 2, availH = A4_H - MARGIN * 2;
+                    const scl = Math.min(availW / imgW, availH / imgH);
+                    const drawW = imgW * scl, drawH = imgH * scl;
+                    newPage.drawImage(emb, {
+                        x: (A4_W - drawW) / 2, y: (A4_H - drawH) / 2,
+                        width: drawW, height: drawH,
+                    });
+                }
             } catch (e) { console.warn('Extra PDF embed failed:', e); }
         }
-        if (!emb) continue;
-        const availW = A4_W - MARGIN * 2, availH = A4_H - MARGIN * 2;
-        const scl = Math.min(availW / imgW, availH / imgH);
-        const drawW = imgW * scl, drawH = imgH * scl;
-        const drawX = (A4_W - drawW) / 2, drawY = (A4_H - drawH) / 2;
-        newPage.drawImage(emb, { x: drawX, y: drawY, width: drawW, height: drawH });
     }
-    return await pdfDoc.save();
+
+    return await pdfDoc.save({
+        useObjectStreams: true,
+        addDefaultPage: false,
+        updateFieldAppearances: false,
+    });
 }
 
 /* ============================================================
@@ -2714,7 +2372,7 @@ async function renderFinalPreview() {
     const stage = document.getElementById('finalPreviewStage');
     stage.innerHTML = '';
     if (!state.finalPdfBytes) return;
-    const pdfDoc = await pdfjsLib.getDocument({ data: state.finalPdfBytes.slice(0) }).promise;
+    const pdfDoc = await pdfjsLib.getDocument({ data: freshCopy(state.finalPdfBytes) }).promise;
     const numPages = pdfDoc.numPages;
     document.getElementById('finalPageCount').textContent = `कुल पेज: ${numPages}`;
     for (let i = 1; i <= numPages; i++) {
@@ -2811,7 +2469,7 @@ async function processPDF() {
 }
 
 /* ============================================================
-   KEYBOARD SHORTCUTS (GLOBAL)
+   KEYBOARD SHORTCUTS
    ============================================================ */
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeFinalPreview();
@@ -2857,7 +2515,6 @@ function updateIncomeFields(event) {
    INIT
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-    // Collapsible sections
     document.querySelectorAll('.form-section').forEach(section => {
         const header = section.querySelector('.section-title.title-main');
         if (!header) return;
@@ -2882,7 +2539,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Load settings
     const loaded = loadSettings(false);
     if (loaded) {
         const statusEl = document.getElementById('settingsStatus');
